@@ -1,0 +1,81 @@
+{% extends 'shop/base.html' %}
+{% block title %}Главная — SanderStu Реклама{% endblock %}
+{% block content %}
+<main>
+    <section class="hero">
+        <div class="container hero-inner">
+            <div class="hero-text">
+                <h1>Продвигайте свой бизнес эффективно</h1>
+                <p>Мы подбираем и размещаем рекламу, которая работает. Прозрачно, быстро, измеримо.</p>
+                <div class="hero-actions">
+                    <button class="btn accent" data-nav="buy">Купить рекламу</button>
+                    <button class="btn" data-nav="order">Заказать рекламу</button>
+                </div>
+            </div>
+            <div class="hero-art" aria-hidden="true"></div>
+        </div>
+    </section>
+
+    <section class="features container">
+        <div class="feature">
+            <h3>Миссия</h3>
+            <p>Помогать компаниям расти через честные и результативные рекламные кампании.</p>
+        </div>
+        <div class="feature">
+            <h3>Почему мы</h3>
+            <p>Экспертиза, скорость запуска, аналитика и постоянная оптимизация.</p>
+        </div>
+        <div class="feature">
+            <h3>Поддержка</h3>
+            <p>Персональный менеджер на связи 7 дней в неделю.</p>
+        </div>
+    </section>
+
+    <section class="ads-sample container">
+        <div class="section-head">
+            <h2>Примеры рекламных размещений</h2>
+            <a class="link" href="/buy/">Все предложения →</a>
+        </div>
+        <div id="sampleAds" class="cards"></div>
+    </section>
+
+    <section class="testimonials container">
+        <h2>Отзывы клиентов</h2>
+        <div class="reviews">
+            <article class="review"><h4>Анна</h4><p>Запустили баннеры — трафик вырос на 35%.</p><span>★★★★★</span></article>
+            <article class="review"><h4>Игорь</h4><p>Четкие метрики и прозрачный отчёт.</p><span>★★★★☆</span></article>
+            <article class="review"><h4>Мария</h4><p>Email-кампания дала 12% конверсии.</p><span>★★★★★</span></article>
+            <article class="review"><h4>Дмитрий</h4><p>Рекомендую как надежного партнёра.</p><span>★★★★★</span></article>
+        </div>
+    </section>
+
+    <section class="packages container">
+        <h2>Рекламные пакеты</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>Старт</h3>
+                <p>Базовый набор каналов для проверки гипотез.</p>
+                <button class="btn" data-nav="order">Подробнее</button>
+            </div>
+            <div class="card">
+                <h3>Рост</h3>
+                <p>Оптимизация и масштабирование успешных каналов.</p>
+                <button class="btn" data-nav="order">Подробнее</button>
+            </div>
+            <div class="card">
+                <h3>Лидер</h3>
+                <p>Максимальная охватность и бренд‑перформанс.</p>
+                <button class="btn" data-nav="order">Подробнее</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Inline Order Modal trigger -->
+    <div class="floating-order">
+        <button class="btn accent" data-nav="order">Заказать рекламу</button>
+    </div>
+    
+    <!-- Order page content placeholder is a link; dedicated /order/ has full form -->
+{% endblock %}
+
+

@@ -1,0 +1,25 @@
+{% extends 'shop/base.html' %}
+{% block title %}Купить рекламу — SanderStu{% endblock %}
+{% block content %}
+<main class="container page-buy">
+    <h1>Купить рекламу</h1>
+    <div class="filters">
+        <input id="buySearch" type="text" placeholder="Ключевые слова">
+        <select id="buyCategory">
+            <option value="">Все категории</option>
+            <option value="баннеры">Баннеры</option>
+            <option value="соцсети">Соцсети</option>
+            <option value="email">Email</option>
+        </select>
+        <select id="buySort">
+            <option value="">Сортировка</option>
+            <option value="price_asc">Цена: по возрастанию</option>
+            <option value="price_desc">Цена: по убыванию</option>
+            <option value="popularity">Популярность</option>
+        </select>
+        <button id="buyApply" class="btn">Применить</button>
+    </div>
+    <div id="buyResults" class="cards"></div>
+{% endblock %}
+
+

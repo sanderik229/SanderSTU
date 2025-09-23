@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SanderStu Реклама{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="logo" href="/">Sander<span>Stu</span></a>
+            <nav class="main-nav">
+                <button class="btn ghost" data-nav="buy">Купить рекламу</button>
+                <button class="btn" data-nav="order">Заказать рекламу</button>
+            </nav>
+            <div class="search-wrap">
+                <input id="globalSearchInput" type="text" placeholder="Поиск по рекламе..." aria-label="Поиск">
+                <button id="globalSearchBtn" class="btn small">Поиск</button>
+                <div id="globalSearchResults" class="search-results" role="listbox" aria-label="Результаты поиска"></div>
+            </div>
+            <div class="auth-actions">
+                <button class="btn ghost" data-modal-open="login">Войти</button>
+                <button class="btn accent" data-modal-open="register">Зарегистрироваться</button>
+            </div>
+            <button id="burger" class="burger" aria-label="Меню">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>© 2025 SanderStu. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <div class="modal" id="modal-login" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-dialog">
+            <button class="modal-close" data-modal-close>&times;</button>
+            <h3>Войти</h3>
+            <form id="loginForm" class="form">
+                <label>Email<input type="email" name="email" required></label>
+                <label>Пароль<input type="password" name="password" required></label>
+                <button class="btn accent" type="submit">Войти</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modal-register" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-dialog">
+            <button class="modal-close" data-modal-close>&times;</button>
+            <h3>Зарегистрироваться</h3>
+            <form id="registerForm" class="form">
+                <label>Email<input type="email" name="email" required></label>
+                <label>Пароль<input type="password" name="password" required></label>
+                <button class="btn accent" type="submit">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'shop/js/main.js' %}"></script>
+</body>
+</html>
+
+
