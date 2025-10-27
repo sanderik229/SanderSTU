@@ -608,6 +608,20 @@ function setupMyOrdersPage(){
         return;
       }
       ordersList.innerHTML = orders.map(orderTemplate).join('');
+      
+      // Добавляем обработчики событий для кнопок оплаты
+      const paymentButtons = ordersList.querySelectorAll('.payment-btn');
+      paymentButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const orderId = this.getAttribute('data-order-id');
+          const amount = this.getAttribute('data-amount');
+          if (typeof showPaymentModal === 'function') {
+            showPaymentModal(orderId, amount);
+          } else {
+            console.error('showPaymentModal function not available');
+          }
+        });
+      });
     } catch(error) {
       console.error('Error loading orders:', error);
       ordersList.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px">Ошибка загрузки заказов: ' + error.message + '</p>';
@@ -774,6 +788,36 @@ function orderTemplate(order){
     <p><strong>Цена:</strong> ${order.offer.price.toLocaleString('ru-RU')} ₽</p>
   ` : '';
   
+  // Payment status and button
+  const paymentStatusMap = {
+    'pending': {text: 'Не оплачено', class: 'pending'},
+    'paid': {text: 'Оплачено', class: 'paid'},
+    'failed': {text: 'Ошибка оплаты', class: 'failed'}
+  };
+  const paymentStatus = paymentStatusMap[order.payment_status] || {text: 'Неизвестно', class: 'pending'};
+  
+  const paymentButton = order.payment_status === 'pending' ? `
+    <div class="payment-section">
+      <div class="payment-status pending">
+        <span class="payment-icon">⚠</span>
+        <span>Не оплачено</span>
+      </div>
+      <button class="btn accent payment-btn" data-order-id="${order.id}" data-amount="${order.payment_amount || order.budget || 15000}">
+        💳 Оплатить заказ
+      </button>
+    </div>
+  ` : order.payment_status === 'paid' ? `
+    <div class="payment-status paid">
+      <span class="payment-icon">✓</span>
+      <span>Оплачено</span>
+    </div>
+  ` : order.payment_status === 'failed' ? `
+    <div class="payment-status failed">
+      <span class="payment-icon">❌</span>
+      <span>Ошибка оплаты</span>
+    </div>
+  ` : '';
+  
   return `
     <div class="order-card">
       <div class="order-header">
@@ -787,7 +831,9 @@ function orderTemplate(order){
         ${offerInfo}
         <p><strong>Описание:</strong> ${order.description || 'Не указано'}</p>
         <p><strong>Дата создания:</strong> ${createdDate}</p>
+        <p><strong>Статус оплаты:</strong> ${paymentStatus.text}</p>
         ${order.order_type === 'personal' ? '<span class="order-type">Персональный заказ</span>' : '<span class="order-type">Заказ по предложению</span>'}
+        ${paymentButton}
       </div>
     </div>
   `;
