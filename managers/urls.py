@@ -1,20 +1,12 @@
 from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .api_views import (
-    ManagerViewSet, AdServiceViewSet, ManagerOrderViewSet, 
-    WeeklyReportViewSet, NotificationViewSet
-)
 from .views import (
     manager_dashboard, manager_logout, manager_profile, get_bloggers,
-    generate_weekly_report_pdf
+    generate_weekly_report_pdf, create_service, public_orders
 )
-
-router = DefaultRouter()
-router.register(r'managers', ManagerViewSet)
-router.register(r'services', AdServiceViewSet)
-router.register(r'orders', ManagerOrderViewSet)
-router.register(r'reports', WeeklyReportViewSet)
-router.register(r'notifications', NotificationViewSet)
+from .api_views import (
+    manager_profile_api, manager_profile_update_api, manager_bloggers_api,
+    manager_services_api, manager_create_service_api
+)
 
 urlpatterns = [
     # Веб-интерфейс
@@ -22,8 +14,14 @@ urlpatterns = [
     path('logout/', manager_logout, name='manager_logout'),
     path('profile/', manager_profile, name='manager_profile'),
     path('bloggers/', get_bloggers, name='get_bloggers'),
+    path('services/create/', create_service, name='create_service'),
+    path('public-orders/', public_orders, name='public_orders'),
     path('reports/<int:report_id>/pdf/', generate_weekly_report_pdf, name='generate_report_pdf'),
     
-    # API
-    path('api/', include(router.urls)),
+    # API endpoints для JWT аутентификации
+    path('api/profile/', manager_profile_api, name='manager_profile_api'),
+    path('api/profile/update/', manager_profile_update_api, name='manager_profile_update_api'),
+    path('api/bloggers/', manager_bloggers_api, name='manager_bloggers_api'),
+    path('api/services/', manager_services_api, name='manager_services_api'),
+    path('api/services/create/', manager_create_service_api, name='manager_create_service_api'),
 ]

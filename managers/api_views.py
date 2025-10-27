@@ -1,316 +1,168 @@
-from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.db.models import Sum, Count, Q
-from django.utils import timezone
-from datetime import datetime, timedelta
-from .models import Manager, AdService, ManagerOrder, WeeklyReport, Notification
-from .serializers import (
-    ManagerSerializer, AdServiceSerializer, ManagerOrderSerializer, 
-    WeeklyReportSerializer, NotificationSerializer, BloggerSerializer
-)
+from rest_framework import status
+from django.http import JsonResponse
+from django.contrib.auth import get_user_model
+from managers.models import Manager, AdService, ManagerOrder
 from bloggers.models import Blogger
+import json
 
+User = get_user_model()
 
-class ManagerViewSet(viewsets.ModelViewSet):
-    """ViewSet для управления менеджерами"""
-    queryset = Manager.objects.all()
-    serializer_class = ManagerSerializer
-    permission_classes = [permissions.IsAuthenticated]
+def is_manager_user(user):
+    """Проверяет, является ли пользователь менеджером"""
+    return hasattr(user, 'manager_profile')
 
-    def get_queryset(self):
-        # Менеджеры видят только свой профиль
-        if hasattr(self.request.user, 'manager_profile'):
-            return Manager.objects.filter(user=self.request.user)
-        return Manager.objects.none()
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def manager_profile_api(request):
+    """API для получения профиля менеджера"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    manager = request.user.manager_profile
+    
+    # Получаем список курируемых блоггеров
+    managed_bloggers = Blogger.objects.filter(manager=manager)
+    bloggers_data = [{
+        'id': blogger.id,
+        'name': blogger.name,
+        'social_network': blogger.social_network,
+        'topic': blogger.topic,
+        'audience_size': blogger.audience_size
+    } for blogger in managed_bloggers]
 
-    @action(detail=False, methods=['get'])
-    def profile(self, request):
-        """Получить профиль текущего менеджера"""
-        if not hasattr(request.user, 'manager_profile'):
-            return Response({'error': 'User is not a manager'}, status=status.HTTP_403_FORBIDDEN)
-        
-        serializer = self.get_serializer(request.user.manager_profile)
-        return Response(serializer.data)
+    profile_data = {
+        'id': manager.id,
+        'user_email': manager.user.email,
+        'user_full_name': manager.user.get_full_name(),
+        'first_name': manager.user.first_name,
+        'last_name': manager.user.last_name,
+        'phone': manager.phone,
+        'department': manager.department,
+        'hire_date': manager.hire_date,
+        'is_active': manager.is_active,
+        'active_orders_count': manager.active_orders_count,
+        'managed_bloggers_count': manager.managed_bloggers_count,
+        'managed_bloggers': bloggers_data,
+        'created_at': manager.created_at,
+        'updated_at': manager.updated_at
+    }
 
-    @action(detail=False, methods=['put'])
-    def update_profile(self, request):
-        """Обновить профиль менеджера"""
-        if not hasattr(request.user, 'manager_profile'):
-            return Response({'error': 'User is not a manager'}, status=status.HTTP_403_FORBIDDEN)
-        
+    return Response(profile_data)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def manager_profile_update_api(request):
+    """API для обновления профиля менеджера"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
         manager = request.user.manager_profile
-        serializer = self.get_serializer(manager, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class AdServiceViewSet(viewsets.ModelViewSet):
-    """ViewSet для управления рекламными услугами"""
-    queryset = AdService.objects.all()
-    serializer_class = AdServiceSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        # Менеджеры видят только свои услуги
-        if hasattr(self.request.user, 'manager_profile'):
-            return AdService.objects.filter(manager=self.request.user.manager_profile)
-        return AdService.objects.none()
-
-    def perform_create(self, serializer):
-        # Автоматически назначаем текущего менеджера
-        if hasattr(self.request.user, 'manager_profile'):
-            serializer.save(manager=self.request.user.manager_profile)
-
-    @action(detail=True, methods=['post'])
-    def toggle_active(self, request, pk=None):
-        """Переключить статус активности услуги"""
-        service = self.get_object()
-        service.is_active = not service.is_active
-        service.save()
         
-        # Создаем уведомление
-        notification_type = 'service_updated' if service.is_active else 'service_deleted'
-        Notification.objects.create(
-            manager=service.manager,
-            notification_type=notification_type,
-            title=f"Услуга {'активирована' if service.is_active else 'деактивирована'}",
-            message=f"Услуга '{service.name}' была {'активирована' if service.is_active else 'деактивирована'}"
+        # Обновляем данные пользователя
+        if 'first_name' in request.data:
+            manager.user.first_name = request.data['first_name']
+        if 'last_name' in request.data:
+            manager.user.last_name = request.data['last_name']
+        if 'phone' in request.data:
+            manager.phone = request.data['phone']
+        if 'department' in request.data:
+            manager.department = request.data['department']
+
+        manager.user.save()
+        manager.save()
+
+        return Response({'message': 'Профиль успешно обновлен'}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def manager_bloggers_api(request):
+    """API для получения блоггеров менеджера"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    manager = request.user.manager_profile
+    bloggers = Blogger.objects.filter(manager=manager)
+    bloggers_data = [{
+        'id': blogger.id,
+        'name': blogger.name,
+        'social_network': blogger.social_network,
+        'topic': blogger.topic,
+        'audience_size': blogger.audience_size,
+        'manager_name': manager.user.get_full_name()
+    } for blogger in bloggers]
+
+    return Response(bloggers_data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def manager_services_api(request):
+    """API для получения услуг менеджера"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    manager = request.user.manager_profile
+    services = AdService.objects.filter(manager=manager)
+    services_data = [{
+        'id': service.id,
+        'name': service.name,
+        'social_network': service.social_network,
+        'price': float(service.price),
+        'description': service.description,
+        'blogger_name': service.blogger.name,
+        'is_active': service.is_active,
+        'created_at': service.created_at
+    } for service in services]
+
+    return Response(services_data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def manager_create_service_api(request):
+    """API для создания услуги менеджером"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        manager = request.user.manager_profile
+        
+        # Получаем блоггера - он должен быть курируемым этим менеджером
+        blogger_id = request.data.get('blogger_id')
+        if not blogger_id:
+            return Response({'error': 'Необходимо указать блоггера'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            blogger = Blogger.objects.get(id=blogger_id, manager=manager)
+        except Blogger.DoesNotExist:
+            return Response({'error': 'Блоггер не найден или не принадлежит вам'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Создаем услугу
+        service = AdService.objects.create(
+            manager=manager,
+            name=request.data['name'],
+            social_network=request.data['social_network'],
+            price=request.data['price'],
+            description=request.data.get('description', ''),
+            blogger=blogger
         )
-        
-        return Response({'is_active': service.is_active})
 
-    @action(detail=False, methods=['get'])
-    def statistics(self, request):
-        """Получить статистику по услугам"""
-        if not hasattr(request.user, 'manager_profile'):
-            return Response({'error': 'User is not a manager'}, status=status.HTTP_403_FORBIDDEN)
-        
-        manager = request.user.manager_profile
-        services = AdService.objects.filter(manager=manager)
-        
-        stats = {
-            'total_services': services.count(),
-            'active_services': services.filter(is_active=True).count(),
-            'total_revenue': services.aggregate(total=Sum('price'))['total'] or 0,
-            'by_social_network': services.values('social_network').annotate(count=Count('id')),
-            'by_blogger': services.values('blogger__name').annotate(count=Count('id'))
+        response_data = {
+            'id': service.id,
+            'name': service.name,
+            'social_network': service.social_network,
+            'price': float(service.price),
+            'description': service.description,
+            'blogger_name': blogger.name,
+            'is_active': service.is_active
         }
-        
-        return Response(stats)
 
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
-class ManagerOrderViewSet(viewsets.ModelViewSet):
-    """ViewSet для управления заказами менеджера"""
-    queryset = ManagerOrder.objects.all()
-    serializer_class = ManagerOrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        # Менеджеры видят только свои заказы
-        if hasattr(self.request.user, 'manager_profile'):
-            return ManagerOrder.objects.filter(manager=self.request.user.manager_profile)
-        return ManagerOrder.objects.none()
-
-    def perform_create(self, serializer):
-        # Автоматически назначаем текущего менеджера
-        if hasattr(self.request.user, 'manager_profile'):
-            serializer.save(manager=self.request.user.manager_profile)
-
-    @action(detail=True, methods=['post'])
-    def accept_order(self, request, pk=None):
-        """Принять заказ"""
-        order = self.get_object()
-        if order.status != 'new':
-            return Response({'error': 'Order is not in new status'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        order.status = 'accepted'
-        order.save()
-        
-        # Создаем уведомление
-        Notification.objects.create(
-            manager=order.manager,
-            notification_type='order_accepted',
-            title='Заказ принят',
-            message=f'Заказ #{order.id} был принят в работу'
-        )
-        
-        return Response({'status': order.status})
-
-    @action(detail=True, methods=['post'])
-    def complete_order(self, request, pk=None):
-        """Завершить заказ"""
-        order = self.get_object()
-        if order.status not in ['accepted', 'in_progress']:
-            return Response({'error': 'Order cannot be completed'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        order.status = 'completed'
-        order.save()
-        
-        # Создаем уведомление
-        Notification.objects.create(
-            manager=order.manager,
-            notification_type='order_completed',
-            title='Заказ завершен',
-            message=f'Заказ #{order.id} был успешно завершен'
-        )
-        
-        return Response({'status': order.status})
-
-    @action(detail=False, methods=['get'])
-    def personal_orders(self, request):
-        """Получить персональные заказы менеджера"""
-        if not hasattr(request.user, 'manager_profile'):
-            return Response({'error': 'User is not a manager'}, status=status.HTTP_403_FORBIDDEN)
-        
-        manager = request.user.manager_profile
-        personal_orders = ManagerOrder.objects.filter(
-            manager=manager, 
-            order_type='personal'
-        ).order_by('-created_at')
-        
-        serializer = self.get_serializer(personal_orders, many=True)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=['get'])
-    def blogger_orders(self, request):
-        """Получить заказы от блоггеров менеджера"""
-        if not hasattr(request.user, 'manager_profile'):
-            return Response({'error': 'User is not a manager'}, status=status.HTTP_403_FORBIDDEN)
-        
-        manager = request.user.manager_profile
-        blogger_orders = ManagerOrder.objects.filter(
-            manager=manager, 
-            order_type='blogger'
-        ).order_by('-created_at')
-        
-        serializer = self.get_serializer(blogger_orders, many=True)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=['get'])
-    def new_orders(self, request):
-        """Получить новые заказы (персональные и от блоггеров)"""
-        if not hasattr(request.user, 'manager_profile'):
-            return Response({'error': 'User is not a manager'}, status=status.HTTP_403_FORBIDDEN)
-        
-        manager = request.user.manager_profile
-        new_orders = ManagerOrder.objects.filter(
-            manager=manager, 
-            status='new'
-        ).order_by('-created_at')
-        
-        serializer = self.get_serializer(new_orders, many=True)
-        return Response(serializer.data)
-
-
-class WeeklyReportViewSet(viewsets.ModelViewSet):
-    """ViewSet для еженедельных отчетов"""
-    queryset = WeeklyReport.objects.all()
-    serializer_class = WeeklyReportSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        # Менеджеры видят только свои отчеты
-        if hasattr(self.request.user, 'manager_profile'):
-            return WeeklyReport.objects.filter(manager=self.request.user.manager_profile)
-        return WeeklyReport.objects.none()
-
-    @action(detail=False, methods=['post'])
-    def generate_report(self, request):
-        """Сгенерировать еженедельный отчет"""
-        if not hasattr(request.user, 'manager_profile'):
-            return Response({'error': 'User is not a manager'}, status=status.HTTP_403_FORBIDDEN)
-        
-        manager = request.user.manager_profile
-        
-        # Получаем даты недели
-        week_start = request.data.get('week_start')
-        week_end = request.data.get('week_end')
-        
-        if not week_start or not week_end:
-            return Response({'error': 'week_start and week_end are required'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Проверяем, не существует ли уже отчет за эту неделю
-        existing_report = WeeklyReport.objects.filter(
-            manager=manager,
-            week_start=week_start,
-            week_end=week_end
-        ).first()
-        
-        if existing_report:
-            return Response({'error': 'Report for this week already exists'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Собираем статистику
-        orders = ManagerOrder.objects.filter(
-            manager=manager,
-            created_at__date__range=[week_start, week_end]
-        )
-        
-        total_orders = orders.count()
-        total_revenue = orders.aggregate(total=Sum('budget'))['total'] or 0
-        active_services = AdService.objects.filter(manager=manager, is_active=True).count()
-        
-        # Создаем отчет
-        report = WeeklyReport.objects.create(
-            manager=manager,
-            week_start=week_start,
-            week_end=week_end,
-            total_orders=total_orders,
-            total_revenue=total_revenue,
-            active_services=active_services
-        )
-        
-        # Создаем уведомление
-        Notification.objects.create(
-            manager=manager,
-            notification_type='report_generated',
-            title='Отчет сгенерирован',
-            message=f'Еженедельный отчет за {week_start} - {week_end} был создан'
-        )
-        
-        serializer = self.get_serializer(report)
-        return Response(serializer.data)
-
-
-class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet для уведомлений"""
-    queryset = Notification.objects.all()
-    serializer_class = NotificationSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        # Менеджеры видят только свои уведомления
-        if hasattr(self.request.user, 'manager_profile'):
-            return Notification.objects.filter(manager=self.request.user.manager_profile)
-        return Notification.objects.none()
-
-    @action(detail=True, methods=['post'])
-    def mark_read(self, request, pk=None):
-        """Отметить уведомление как прочитанное"""
-        notification = self.get_object()
-        notification.is_read = True
-        notification.save()
-        return Response({'is_read': True})
-
-    @action(detail=False, methods=['post'])
-    def mark_all_read(self, request):
-        """Отметить все уведомления как прочитанные"""
-        if not hasattr(request.user, 'manager_profile'):
-            return Response({'error': 'User is not a manager'}, status=status.HTTP_403_FORBIDDEN)
-        
-        manager = request.user.manager_profile
-        Notification.objects.filter(manager=manager, is_read=False).update(is_read=True)
-        return Response({'message': 'All notifications marked as read'})
-
-    @action(detail=False, methods=['get'])
-    def unread_count(self, request):
-        """Получить количество непрочитанных уведомлений"""
-        if not hasattr(request.user, 'manager_profile'):
-            return Response({'error': 'User is not a manager'}, status=status.HTTP_403_FORBIDDEN)
-        
-        manager = request.user.manager_profile
-        count = Notification.objects.filter(manager=manager, is_read=False).count()
-        return Response({'unread_count': count})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

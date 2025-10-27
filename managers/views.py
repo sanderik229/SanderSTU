@@ -14,8 +14,15 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from io import BytesIO
 import os
+import json
 from .models import Manager, AdService, ManagerOrder, WeeklyReport, Notification
 from bloggers.models import Blogger
+
+
+@login_required
+def public_orders(request):
+    """Страница с заказами для пользователей"""
+    return render(request, 'managers/public_orders.html')
 
 
 @login_required
@@ -44,21 +51,62 @@ def manager_profile(request):
         return JsonResponse({'error': 'Access denied'}, status=403)
     
     manager = request.user.manager_profile
-    profile_data = {
-        'id': manager.id,
-        'user_email': manager.user.email,
-        'user_full_name': manager.user.get_full_name(),
-        'phone': manager.phone,
-        'department': manager.department,
-        'hire_date': manager.hire_date,
-        'is_active': manager.is_active,
-        'active_orders_count': manager.active_orders_count,
-        'managed_bloggers_count': manager.managed_bloggers_count,
-        'created_at': manager.created_at,
-        'updated_at': manager.updated_at
-    }
     
-    return JsonResponse(profile_data)
+    if request.method == 'GET':
+        # Получаем список курируемых блоггеров
+        managed_bloggers = Blogger.objects.filter(manager=manager)
+        bloggers_data = [{
+            'id': blogger.id,
+            'name': blogger.name,
+            'social_network': blogger.get_social_network_display(),
+            'topic': blogger.topic,
+            'audience_size': blogger.audience_size
+        } for blogger in managed_bloggers]
+        
+        profile_data = {
+            'id': manager.id,
+            'user_email': manager.user.email,
+            'user_full_name': manager.user.get_full_name(),
+            'first_name': manager.user.first_name,
+            'last_name': manager.user.last_name,
+            'phone': manager.phone,
+            'department': manager.department,
+            'hire_date': manager.hire_date,
+            'is_active': manager.is_active,
+            'active_orders_count': manager.active_orders_count,
+            'managed_bloggers_count': manager.managed_bloggers_count,
+            'managed_bloggers': bloggers_data,
+            'created_at': manager.created_at,
+            'updated_at': manager.updated_at
+        }
+        
+        response = JsonResponse(profile_data)
+        response['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+    
+    elif request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            
+            # Обновляем данные пользователя
+            if 'first_name' in data:
+                manager.user.first_name = data['first_name']
+            if 'last_name' in data:
+                manager.user.last_name = data['last_name']
+            if 'phone' in data:
+                manager.phone = data['phone']
+            if 'department' in data:
+                manager.department = data['department']
+            
+            manager.user.save()
+            manager.save()
+            
+            return JsonResponse({'message': 'Профиль успешно обновлен'}, status=200)
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @login_required
@@ -67,16 +115,71 @@ def get_bloggers(request):
     if not hasattr(request.user, 'manager_profile'):
         return JsonResponse({'error': 'Access denied'}, status=403)
     
-    bloggers = Blogger.objects.all()
+    manager = request.user.manager_profile
+    bloggers = Blogger.objects.filter(manager=manager)
     bloggers_data = [{
         'id': blogger.id,
         'name': blogger.name,
         'social_network': blogger.social_network,
         'topic': blogger.topic,
-        'audience_size': blogger.audience_size
+        'audience_size': blogger.audience_size,
+        'manager_name': manager.user.get_full_name()
     } for blogger in bloggers]
     
-    return JsonResponse(bloggers_data, safe=False)
+    response = JsonResponse(bloggers_data, safe=False)
+    response['Content-Type'] = 'application/json; charset=utf-8'
+    return response
+
+
+@login_required
+def create_service(request):
+    """Создать новую услугу"""
+    if not hasattr(request.user, 'manager_profile'):
+        return JsonResponse({'error': 'Access denied'}, status=403)
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            manager = request.user.manager_profile
+
+            # Получаем блоггера - он должен быть курируемым этим менеджером
+            blogger_id = data.get('blogger_id')
+            if not blogger_id:
+                return JsonResponse({'error': 'Необходимо указать блоггера'}, status=400)
+            
+            try:
+                blogger = Blogger.objects.get(id=blogger_id, manager=manager)
+            except Blogger.DoesNotExist:
+                return JsonResponse({'error': 'Блоггер не найден или не принадлежит вам'}, status=404)
+
+            # Создаем услугу
+            service = AdService.objects.create(
+                manager=manager,
+                name=data['name'],
+                social_network=data['social_network'],
+                price=data['price'],
+                description=data.get('description', ''),
+                blogger=blogger
+            )
+
+            response_data = {
+                'id': service.id,
+                'name': service.name,
+                'social_network': service.social_network,
+                'price': float(service.price),
+                'description': service.description,
+                'blogger_name': blogger.name,
+                'is_active': service.is_active
+            }
+
+            response = JsonResponse(response_data)
+            response['Content-Type'] = 'application/json; charset=utf-8'
+            return response
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 def transliterate_russian(text):

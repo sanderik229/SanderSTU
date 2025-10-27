@@ -434,26 +434,43 @@ async function postLoginFlow(){
       const fullName = me.profile && me.profile.full_name ? me.profile.full_name : (me.email || me.username || '');
       storage.setEmail(fullName);
       updateAuthUI();
+      
+      // Проверяем, есть ли у пользователя профиль менеджера
+      let isManager = false;
+      try {
+        const managerResponse = await fetch('/manager/api/managers/profile/', {
+          headers: {
+            'Authorization': `Bearer ${storage.getAccess()}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        isManager = managerResponse.ok;
+      } catch(e) {
+        console.log('Пользователь не является менеджером');
+      }
+      
       const role = me.profile && me.profile.role ? me.profile.role : 'user';
-      const isAdmin = role === 'admin' || me.is_staff || me.is_superuser;
+      const isAdmin = role === 'admin' || me.is_superuser;
       
-      // Проверяем, является ли пользователь менеджером
-      const isManager = me.is_staff && !me.is_superuser;
-      
-      if(isAdmin && !isManager){
-        // Супер-админ или админ - перенаправляем в админ-панель
-        window.location.assign('/admin-panel/');
-      } else if(isManager){
+      if(isManager){
         // Менеджер - перенаправляем в панель менеджера
+        console.log('Перенаправляем менеджера в панель менеджера');
         window.location.assign('/manager/');
+      } else if(isAdmin){
+        // Супер-админ или админ - перенаправляем в админ-панель
+        console.log('Перенаправляем админа в админ-панель');
+        window.location.assign('/admin-panel/');
       } else {
         // Обычный пользователь - остаемся на главной странице
-        // window.location.assign('/');
+        console.log('Обычный пользователь, остаемся на главной');
       }
     } else {
       updateAuthUI();
     }
-  } catch(e){ updateAuthUI(); }
+  } catch(e){ 
+    console.error('Ошибка в postLoginFlow:', e);
+    updateAuthUI(); 
+  }
 }
 
 function showToast(message, type='info'){
