@@ -13,6 +13,7 @@ class Blogger(models.Model):
     social_network = models.CharField(max_length=30, choices=SOCIAL_CHOICES)
     topic = models.CharField(max_length=120)
     audience_size = models.PositiveIntegerField(default=0)
+    manager = models.ForeignKey('managers.Manager', on_delete=models.SET_NULL, null=True, blank=True, related_name='managed_bloggers', verbose_name="Менеджер")
 
     def __str__(self) -> str:
         return f"{self.name} ({self.social_network})"

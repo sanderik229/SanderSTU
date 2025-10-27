@@ -4,11 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Last-Modified" content="0">
+    <meta http-equiv="ETag" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Панель менеджера — SanderStu</title>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'shop/css/admin.css' %}">
+    <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'shop/css/admin.css' %}?v=4">
 </head>
 <body>
 <main class="manager-dashboard">
@@ -26,8 +32,8 @@
                     <li><a href="#services" class="nav-item" data-section="services">
                         <span class="nav-icon">🛍️</span> Услуги
                     </a></li>
-                    <li><a href="#orders" class="nav-item" data-section="orders">
-                        <span class="nav-icon">📋</span> Заказы от блоггеров
+                    <li><a href="#bloggers" class="nav-item" data-section="bloggers">
+                        <span class="nav-icon">👥</span> Блоггеры
                     </a></li>
                     <li><a href="#personal-orders" class="nav-item" data-section="personal-orders">
                         <span class="nav-icon">👤</span> Персональные заказы
@@ -115,22 +121,15 @@
                 </div>
             </div>
 
-            <!-- Orders Content -->
-            <div id="orders-section" class="content-section">
+      
+
+            <!-- Bloggers Content -->
+            <div id="bloggers-section" class="content-section">
                 <div class="section-header">
-                    <h2>Заказы от блоггеров</h2>
-                    <div class="filters">
-                        <select id="statusFilter">
-                            <option value="">Все статусы</option>
-                            <option value="new">Новые</option>
-                            <option value="accepted">Принятые</option>
-                            <option value="in_progress">В работе</option>
-                            <option value="completed">Завершенные</option>
-                        </select>
-                    </div>
+                    <h2>Мои блоггеры</h2>
                 </div>
-                <div class="orders-list" id="ordersList">
-                    <div class="loading">Загрузка заказов...</div>
+                <div class="bloggers-list" id="bloggersList">
+                    <div class="loading">Загрузка блоггеров...</div>
                 </div>
             </div>
 
@@ -235,6 +234,135 @@
             <div class="form-actions">
                 <button type="button" class="btn secondary" id="cancelReportBtn">Отмена</button>
                 <button type="submit" class="btn primary">Сгенерировать</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Service Modal -->
+<div id="serviceModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Создать услугу</h3>
+            <span class="close">&times;</span>
+        </div>
+        <form id="serviceForm">
+            <div class="form-group">
+                <label for="serviceName">Название услуги:</label>
+                <input type="text" id="serviceName" required>
+            </div>
+            <div class="form-group">
+                <label for="serviceSocialNetwork">Социальная сеть:</label>
+                <select id="serviceSocialNetwork" required>
+                    <option value="">Выберите соцсеть</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="telegram">Telegram</option>
+                    <option value="vk">VKontakte</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="twitter">Twitter</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="servicePrice">Цена (руб.):</label>
+                <input type="number" id="servicePrice" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="serviceDescription">Описание:</label>
+                <textarea id="serviceDescription" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="serviceBlogger">Блоггер:</label>
+                <select id="serviceBlogger" required>
+                    <option value="">Выберите блоггера (обязательно)</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn secondary" id="cancelServiceBtn">Отмена</button>
+                <button type="submit" class="btn primary">Создать услугу</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Order Modal -->
+<div id="orderModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Создать заказ</h3>
+            <span class="close">&times;</span>
+        </div>
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="orderType">Тип заказа:</label>
+                <select id="orderType" required>
+                    <option value="">Выберите тип заказа</option>
+                    <option value="personal">Персональный заказ</option>
+                    <option value="blogger">Заказ от блоггера</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="clientName">Имя клиента:</label>
+                <input type="text" id="clientName" required>
+            </div>
+            <div class="form-group">
+                <label for="clientEmail">Email клиента:</label>
+                <input type="email" id="clientEmail" required>
+            </div>
+            <div class="form-group">
+                <label for="clientPhone">Телефон клиента:</label>
+                <input type="tel" id="clientPhone" required>
+            </div>
+            <div class="form-group">
+                <label for="serviceDescription">Описание услуги:</label>
+                <textarea id="serviceDescription" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="orderBudget">Бюджет (руб.):</label>
+                <input type="number" id="orderBudget" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="orderBlogger">Блоггер (для заказов от блоггера):</label>
+                <select id="orderBlogger">
+                    <option value="">Выберите блоггера</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn secondary" id="cancelOrderBtn">Отмена</button>
+                <button type="submit" class="btn primary">Создать заказ</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Profile Edit Modal -->
+<div id="profileEditModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Редактировать профиль</h3>
+            <span class="close">&times;</span>
+        </div>
+        <form id="profileEditForm">
+            <div class="form-group">
+                <label for="profileFirstName">Имя:</label>
+                <input type="text" id="profileFirstName" required>
+            </div>
+            <div class="form-group">
+                <label for="profileLastName">Фамилия:</label>
+                <input type="text" id="profileLastName" required>
+            </div>
+            <div class="form-group">
+                <label for="profilePhone">Телефон:</label>
+                <input type="tel" id="profilePhone">
+            </div>
+            <div class="form-group">
+                <label for="profileDepartment">Отдел:</label>
+                <input type="text" id="profileDepartment">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn secondary" id="cancelProfileEditBtn">Отмена</button>
+                <button type="submit" class="btn primary">Сохранить</button>
             </div>
         </form>
     </div>
@@ -724,6 +852,20 @@ class ManagerDashboard {
             this.addService();
         });
 
+        // Order modal
+        document.getElementById('addOrderBtn').addEventListener('click', () => {
+            this.showOrderModal();
+        });
+
+        document.getElementById('cancelOrderBtn').addEventListener('click', () => {
+            document.getElementById('orderModal').style.display = 'none';
+        });
+
+        document.getElementById('orderForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addOrder();
+        });
+
         // Report modal
         document.getElementById('generateReportBtn').addEventListener('click', () => {
             this.showReportModal();
@@ -749,6 +891,20 @@ class ManagerDashboard {
         document.getElementById('statusFilter')?.addEventListener('change', () => {
             this.loadOrders();
         });
+
+        // Profile edit modal
+        document.getElementById('editProfileBtn').addEventListener('click', () => {
+            this.showProfileEditModal();
+        });
+
+        document.getElementById('cancelProfileEditBtn').addEventListener('click', () => {
+            document.getElementById('profileEditModal').style.display = 'none';
+        });
+
+        document.getElementById('profileEditForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.updateProfile();
+        });
     }
 
     setupNavigation() {
@@ -772,9 +928,27 @@ class ManagerDashboard {
             item.classList.remove('active');
         });
 
-        // Show selected section
-        document.getElementById(`${sectionName}-section`).classList.add('active');
-        document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+        // Load data for the section
+        switch(sectionName) {
+            case 'dashboard':
+                this.loadDashboardData();
+                break;
+            case 'services':
+                this.loadServices();
+                break;
+            case 'bloggers':
+                this.loadBloggers();
+                break;
+            case 'personal-orders':
+                this.loadPersonalOrders();
+                break;
+            case 'reports':
+                this.loadReports();
+                break;
+            case 'profile':
+                this.loadProfile();
+                break;
+        }
 
         // Update page title
         const titles = {
@@ -809,13 +983,20 @@ class ManagerDashboard {
 
     async loadManagerProfile() {
         try {
-            const response = await fetch('/manager/api/managers/profile/', {
+            console.log('Loading manager profile...');
+            const response = await fetch('/manager/api/profile/', {
                 headers: this.getAuthHeaders()
             });
             
+            console.log('Profile response status:', response.status);
             if (response.ok) {
                 const profile = await response.json();
+                console.log('Profile data:', profile);
                 document.getElementById('managerName').textContent = profile.user_full_name || 'Менеджер';
+            } else {
+                console.error('Profile request failed:', response.status);
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
             }
         } catch (error) {
             console.error('Error loading manager profile:', error);
@@ -824,17 +1005,22 @@ class ManagerDashboard {
 
     async loadDashboardData() {
         try {
-            // Load statistics
-            const statsResponse = await fetch('/manager/api/services/statistics/', {
+            console.log('Loading dashboard data...');
+            // Load statistics from profile data
+            const profileResponse = await fetch('/manager/api/profile/', {
                 headers: this.getAuthHeaders()
             });
             
-            if (statsResponse.ok) {
-                const stats = await statsResponse.json();
-                document.getElementById('totalOrders').textContent = stats.total_orders || 0;
-                document.getElementById('totalRevenue').textContent = `${stats.total_revenue || 0} ₽`;
-                document.getElementById('activeServices').textContent = stats.active_services || 0;
-                document.getElementById('managedBloggers').textContent = stats.managed_bloggers || 0;
+            console.log('Dashboard profile response status:', profileResponse.status);
+            if (profileResponse.ok) {
+                const profile = await profileResponse.json();
+                console.log('Dashboard profile data:', profile);
+                document.getElementById('totalOrders').textContent = profile.active_orders_count || 0;
+                document.getElementById('totalRevenue').textContent = '0 ₽'; // TODO: Calculate from orders
+                document.getElementById('activeServices').textContent = '0'; // TODO: Get from services
+                document.getElementById('managedBloggers').textContent = profile.managed_bloggers_count || 0;
+            } else {
+                console.error('Dashboard profile request failed:', profileResponse.status);
             }
 
             // Load charts data
@@ -893,13 +1079,18 @@ class ManagerDashboard {
 
     async loadServices() {
         try {
+            console.log('Loading services...');
             const response = await fetch('/manager/api/services/', {
                 headers: this.getAuthHeaders()
             });
             
+            console.log('Services response status:', response.status);
             if (response.ok) {
                 const services = await response.json();
+                console.log('Services data:', services);
                 this.renderServices(services);
+            } else {
+                console.error('Services request failed:', response.status);
             }
         } catch (error) {
             console.error('Error loading services:', error);
@@ -1106,38 +1297,20 @@ class ManagerDashboard {
 
     async loadProfile() {
         try {
-            const response = await fetch('/manager/api/managers/profile/', {
+            const response = await fetch('/manager/api/profile/', {
                 headers: this.getAuthHeaders()
             });
             
             if (response.ok) {
                 const profile = await response.json();
-                this.renderProfile(profile);
+                this.displayProfile(profile);
             }
         } catch (error) {
             console.error('Error loading profile:', error);
+            this.showNotification('Ошибка при загрузке профиля', 'error');
         }
     }
 
-    renderProfile(profile) {
-        const container = document.getElementById('profileContent');
-        
-        container.innerHTML = `
-            <div class="profile-card">
-                <div class="profile-info">
-                    <h3>Информация о менеджере</h3>
-                    <div class="profile-details">
-                        <p><strong>Имя:</strong> ${profile.user_full_name || 'Не указано'}</p>
-                        <p><strong>Email:</strong> ${profile.user_email || 'Не указано'}</p>
-                        <p><strong>Телефон:</strong> ${profile.phone || 'Не указано'}</p>
-                        <p><strong>Отдел:</strong> ${profile.department || 'Не указано'}</p>
-                        <p><strong>Дата найма:</strong> ${profile.hire_date || 'Не указано'}</p>
-                        <p><strong>Статус:</strong> ${profile.is_active ? 'Активен' : 'Неактивен'}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
 
     showServiceModal() {
         document.getElementById('serviceModal').style.display = 'block';
@@ -1146,15 +1319,15 @@ class ManagerDashboard {
 
     async loadBloggers() {
         try {
-            const response = await fetch('/manager/api/bloggers/', {
+            const response = await fetch('/manager/bloggers/', {
                 headers: this.getAuthHeaders()
             });
             
             if (response.ok) {
                 const bloggers = await response.json();
                 const select = document.getElementById('serviceBlogger');
-                select.innerHTML = '<option value="">Выберите блоггера</option>' +
-                    bloggers.map(blogger => `<option value="${blogger.id}">${blogger.name}</option>`).join('');
+                select.innerHTML = '<option value="">Выберите блоггера (обязательно)</option>' +
+                    bloggers.map(blogger => `<option value="${blogger.id}">${blogger.name} (${blogger.social_network})</option>`).join('');
             }
         } catch (error) {
             console.error('Error loading bloggers:', error);
@@ -1163,15 +1336,21 @@ class ManagerDashboard {
 
     async addService() {
         try {
+            const bloggerId = document.getElementById('serviceBlogger').value;
+            if (!bloggerId) {
+                this.showNotification('Необходимо выбрать блоггера', 'error');
+                return;
+            }
+
             const formData = {
                 name: document.getElementById('serviceName').value,
-                social_network: document.getElementById('serviceSocial').value,
-                price: document.getElementById('servicePrice').value,
+                social_network: document.getElementById('serviceSocialNetwork').value,
+                price: parseFloat(document.getElementById('servicePrice').value),
                 description: document.getElementById('serviceDescription').value,
-                blogger: document.getElementById('serviceBlogger').value || null
+                blogger_id: bloggerId
             };
 
-            const response = await fetch('/manager/api/services/', {
+                const response = await fetch('/manager/api/services/create/', {
                 method: 'POST',
                 headers: this.getAuthHeaders(),
                 body: JSON.stringify(formData)
@@ -1182,10 +1361,69 @@ class ManagerDashboard {
                 document.getElementById('serviceForm').reset();
                 this.loadServices();
                 this.showNotification('Услуга добавлена!', 'success');
+            } else {
+                const error = await response.json();
+                this.showNotification(error.error || 'Ошибка при добавлении услуги', 'error');
             }
         } catch (error) {
             console.error('Error adding service:', error);
             this.showNotification('Ошибка при добавлении услуги', 'error');
+        }
+    }
+
+    showOrderModal() {
+        document.getElementById('orderModal').style.display = 'block';
+        this.loadBloggersForOrder();
+    }
+
+    async loadBloggersForOrder() {
+        try {
+            const response = await fetch('/manager/bloggers/', {
+                headers: this.getAuthHeaders()
+            });
+            
+            if (response.ok) {
+                const bloggers = await response.json();
+                const select = document.getElementById('orderBlogger');
+                select.innerHTML = '<option value="">Выберите блоггера</option>' +
+                    bloggers.map(blogger => `<option value="${blogger.id}">${blogger.name} (${blogger.social_network})</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Error loading bloggers for order:', error);
+        }
+    }
+
+    async addOrder() {
+        try {
+            const formData = {
+                order_type: document.getElementById('orderType').value,
+                client_name: document.getElementById('clientName').value,
+                client_email: document.getElementById('clientEmail').value,
+                client_phone: document.getElementById('clientPhone').value,
+                service_description: document.getElementById('serviceDescription').value,
+                budget: parseFloat(document.getElementById('orderBudget').value),
+                blogger_id: document.getElementById('orderBlogger').value || null
+            };
+
+            const response = await fetch('/manager/api/orders/', {
+                method: 'POST',
+                headers: this.getAuthHeaders(),
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                document.getElementById('orderModal').style.display = 'none';
+                document.getElementById('orderForm').reset();
+                this.loadOrders();
+                this.loadPersonalOrders();
+                this.showNotification('Заказ создан успешно!', 'success');
+            } else {
+                const error = await response.json();
+                this.showNotification('Ошибка при создании заказа: ' + error.error, 'error');
+            }
+        } catch (error) {
+            console.error('Error adding order:', error);
+            this.showNotification('Ошибка при создании заказа', 'error');
         }
     }
 
@@ -1227,6 +1465,7 @@ class ManagerDashboard {
 
     getAuthHeaders() {
         const token = localStorage.getItem('access');
+        console.log('Auth token:', token ? token.substring(0, 20) + '...' : 'No token');
         return {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -1264,10 +1503,183 @@ class ManagerDashboard {
             notification.remove();
         }, 3000);
     }
+
+    async loadBloggers() {
+        try {
+            console.log('Loading bloggers...');
+            const response = await fetch('/manager/api/bloggers/', {
+                headers: this.getAuthHeaders()
+            });
+
+            console.log('Bloggers response status:', response.status);
+            if (response.ok) {
+                const bloggers = await response.json();
+                console.log('Bloggers data:', bloggers);
+                this.displayBloggers(bloggers);
+            } else {
+                console.error('Bloggers request failed:', response.status);
+            }
+        } catch (error) {
+            console.error('Error loading bloggers:', error);
+            this.showNotification('Ошибка при загрузке блоггеров', 'error');
+        }
+    }
+
+    displayBloggers(bloggers) {
+        const container = document.getElementById('bloggersList');
+        
+        if (bloggers.length === 0) {
+            container.innerHTML = '<div class="no-data">У вас нет курируемых блоггеров</div>';
+            return;
+        }
+
+        container.innerHTML = bloggers.map(blogger => `
+            <div class="blogger-card">
+                <div class="blogger-info">
+                    <h3>${blogger.name}</h3>
+                    <p><strong>Соцсеть:</strong> ${blogger.social_network}</p>
+                    <p><strong>Тема:</strong> ${blogger.topic}</p>
+                    <p><strong>Аудитория:</strong> ${blogger.audience_size.toLocaleString()} подписчиков</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async loadProfile() {
+        try {
+            const response = await fetch('/manager/api/profile/', {
+                headers: this.getAuthHeaders()
+            });
+            
+            if (response.ok) {
+                const profile = await response.json();
+                this.displayProfile(profile);
+            }
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            this.showNotification('Ошибка при загрузке профиля', 'error');
+        }
+    }
+
+    displayProfile(profile) {
+        const container = document.getElementById('profileContent');
+        
+        container.innerHTML = `
+            <div class="profile-info">
+                <div class="profile-field">
+                    <label>Имя:</label>
+                    <span>${profile.user_full_name || 'Не указано'}</span>
+                </div>
+                <div class="profile-field">
+                    <label>Email:</label>
+                    <span>${profile.user_email}</span>
+                </div>
+                <div class="profile-field">
+                    <label>Телефон:</label>
+                    <span>${profile.phone || 'Не указан'}</span>
+                </div>
+                <div class="profile-field">
+                    <label>Отдел:</label>
+                    <span>${profile.department || 'Не указан'}</span>
+                </div>
+                <div class="profile-field">
+                    <label>Дата найма:</label>
+                    <span>${new Date(profile.hire_date).toLocaleDateString()}</span>
+                </div>
+                <div class="profile-field">
+                    <label>Курируемые блоггеры:</label>
+                    <span>${profile.managed_bloggers_count}</span>
+                </div>
+            </div>
+            <div class="managed-bloggers">
+                <h3>Мои блоггеры:</h3>
+                ${profile.managed_bloggers.length > 0 ? 
+                    profile.managed_bloggers.map(blogger => `
+                        <div class="blogger-item">
+                            <strong>${blogger.name}</strong> - ${blogger.social_network} (${blogger.audience_size.toLocaleString()} подписчиков)
+                        </div>
+                    `).join('') : 
+                    '<p>Нет курируемых блоггеров</p>'
+                }
+            </div>
+        `;
+    }
+
+    showProfileEditModal() {
+        // Загружаем текущие данные профиля
+        this.loadProfileForEdit();
+        document.getElementById('profileEditModal').style.display = 'block';
+    }
+
+    async loadProfileForEdit() {
+        try {
+            const response = await fetch('/manager/api/profile/', {
+                headers: this.getAuthHeaders()
+            });
+            
+            if (response.ok) {
+                const profile = await response.json();
+                document.getElementById('profileFirstName').value = profile.first_name || '';
+                document.getElementById('profileLastName').value = profile.last_name || '';
+                document.getElementById('profilePhone').value = profile.phone || '';
+                document.getElementById('profileDepartment').value = profile.department || '';
+            }
+        } catch (error) {
+            console.error('Error loading profile for edit:', error);
+        }
+    }
+
+    async updateProfile() {
+        try {
+            const formData = {
+                first_name: document.getElementById('profileFirstName').value,
+                last_name: document.getElementById('profileLastName').value,
+                phone: document.getElementById('profilePhone').value,
+                department: document.getElementById('profileDepartment').value
+            };
+
+            const response = await fetch('/manager/api/profile/update/', {
+                method: 'PUT',
+                headers: this.getAuthHeaders(),
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                document.getElementById('profileEditModal').style.display = 'none';
+                this.loadProfile();
+                this.loadManagerProfile(); // Обновляем данные в заголовке
+                this.showNotification('Профиль успешно обновлен!', 'success');
+            } else {
+                const error = await response.json();
+                this.showNotification(error.error || 'Ошибка при обновлении профиля', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            this.showNotification('Ошибка при обновлении профиля', 'error');
+        }
+    }
 }
 
 // Initialize dashboard when page loads
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Отладочная информация
+    console.log('Manager dashboard loaded');
+    console.log('Access token:', localStorage.getItem('access'));
+    console.log('Current URL:', window.location.href);
+    
+    try {
+        const me = await fetch('/api/v2/me/', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const userData = await me.json();
+        console.log('Current user:', userData);
+    } catch (e) {
+        console.error('Error fetching user data:', e);
+    }
+    
     window.managerDashboard = new ManagerDashboard();
 });
 </script>

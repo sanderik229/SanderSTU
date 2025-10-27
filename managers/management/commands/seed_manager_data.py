@@ -1,265 +1,157 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from django.db import models
 from managers.models import Manager, AdService, ManagerOrder, WeeklyReport, Notification
-from bloggers.models import Blogger
+from bloggers.models import Blogger, AdOffer
 from decimal import Decimal
 from datetime import datetime, timedelta
-import random
 
 User = get_user_model()
 
-
 class Command(BaseCommand):
-    help = 'Заполнить базу данных тестовыми данными для менеджеров'
-
-    def add_arguments(self, parser):
-        parser.add_argument('--clear', action='store_true', help='Очистить существующие данные')
+    help = 'Создает тестовые данные для панели менеджера'
 
     def handle(self, *args, **options):
-        if options['clear']:
-            self.stdout.write('Очистка существующих данных...')
-            AdService.objects.all().delete()
-            ManagerOrder.objects.all().delete()
-            WeeklyReport.objects.all().delete()
-            Notification.objects.all().delete()
-
-        # Создаем тестовых блоггеров если их нет
-        self.create_bloggers()
-        
-        # Создаем тестовые услуги
-        self.create_services()
-        
-        # Создаем тестовые заказы
-        self.create_orders()
-        
-        # Создаем тестовые отчеты
-        self.create_reports()
-        
-        # Создаем тестовые уведомления
-        self.create_notifications()
-
-        self.stdout.write(
-            self.style.SUCCESS('Тестовые данные успешно созданы!')
-        )
-
-    def create_bloggers(self):
-        """Создаем тестовых блоггеров"""
-        bloggers_data = [
-            {
-                'name': 'Анна Петрова',
+        # Создаем тестового блоггера
+        blogger, created = Blogger.objects.get_or_create(
+            name="Тестовый Блоггер",
+            defaults={
                 'social_network': 'instagram',
-                'topic': 'Мода и красота',
+                'topic': 'Lifestyle',
                 'audience_size': 50000
-            },
-            {
-                'name': 'Михаил Иванов',
-                'social_network': 'tiktok',
-                'topic': 'Юмор и развлечения',
-                'audience_size': 75000
-            },
-            {
-                'name': 'Елена Смирнова',
-                'social_network': 'vk',
-                'topic': 'Образование',
-                'audience_size': 30000
-            },
-            {
-                'name': 'Дмитрий Козлов',
-                'social_network': 'youtube',
-                'topic': 'Технологии',
-                'audience_size': 100000
             }
-        ]
-
-        for blogger_data in bloggers_data:
-            blogger, created = Blogger.objects.get_or_create(
-                name=blogger_data['name'],
-                defaults=blogger_data
-            )
-            if created:
-                self.stdout.write(f'Создан блоггер: {blogger.name}')
-
-    def create_services(self):
-        """Создаем тестовые услуги"""
-        if not hasattr(User.objects.first(), 'manager_profile'):
-            self.stdout.write('Нет менеджеров для создания услуг')
-            return
-
-        manager = Manager.objects.first()
-        bloggers = Blogger.objects.all()
+        )
         
-        if not bloggers.exists():
-            self.stdout.write('Нет блоггеров для создания услуг')
-            return
+        if created:
+            self.stdout.write(
+                self.style.SUCCESS(f'Создан тестовый блоггер: {blogger.name}')
+            )
+        else:
+            self.stdout.write(
+                self.style.WARNING(f'Блоггер уже существует: {blogger.name}')
+            )
 
-        services_data = [
-            {
-                'name': 'Реклама в Instagram Stories',
+        # Создаем тестовое предложение
+        offer, created = AdOffer.objects.get_or_create(
+            title="Тестовое предложение",
+            defaults={
+                'blogger': blogger,
                 'social_network': 'instagram',
                 'price': Decimal('15000.00'),
-                'description': 'Размещение рекламы в историях Instagram на 24 часа'
-            },
-            {
-                'name': 'Обзор продукта на YouTube',
-                'social_network': 'youtube',
-                'price': Decimal('25000.00'),
-                'description': 'Детальный обзор продукта в видео на YouTube канале'
-            },
-            {
-                'name': 'Реклама в TikTok',
-                'social_network': 'tiktok',
-                'price': Decimal('12000.00'),
-                'description': 'Создание рекламного видео для TikTok'
-            },
-            {
-                'name': 'Пост в Telegram канале',
-                'social_network': 'telegram',
-                'price': Decimal('8000.00'),
-                'description': 'Размещение рекламного поста в Telegram канале'
-            },
-            {
-                'name': 'Реклама в VK',
-                'social_network': 'vk',
-                'price': Decimal('10000.00'),
-                'description': 'Реклама в группе ВКонтакте'
+                'description': 'Тестовое предложение для проверки функционала'
             }
-        ]
-
-        for service_data in services_data:
-            blogger = random.choice(bloggers)
-            service, created = AdService.objects.get_or_create(
-                name=service_data['name'],
-                manager=manager,
-                defaults={
-                    **service_data,
-                    'blogger': blogger
-                }
+        )
+        
+        if created:
+            self.stdout.write(
+                self.style.SUCCESS(f'Создано тестовое предложение: {offer.title}')
             )
-            if created:
-                self.stdout.write(f'Создана услуга: {service.name}')
-
-    def create_orders(self):
-        """Создаем тестовые заказы"""
-        manager = Manager.objects.first()
-        if not manager:
-            return
-
-        orders_data = [
-            {
-                'order_type': 'personal',
-                'status': 'new',
-                'client_name': 'Иван Петров',
-                'client_email': 'ivan@client.com',
-                'client_phone': '+7-999-555-55-55',
-                'service_description': 'Нужна реклама нового приложения для фитнеса',
-                'budget': Decimal('20000.00')
-            },
-            {
-                'order_type': 'personal',
-                'status': 'accepted',
-                'client_name': 'Мария Сидорова',
-                'client_email': 'maria@client.com',
-                'client_phone': '+7-999-666-66-66',
-                'service_description': 'Продвижение интернет-магазина одежды',
-                'budget': Decimal('30000.00')
-            },
-            {
-                'order_type': 'personal',
-                'status': 'completed',
-                'client_name': 'Алексей Новиков',
-                'client_email': 'alexey@client.com',
-                'client_phone': '+7-999-777-77-77',
-                'service_description': 'Реклама курсов программирования',
-                'budget': Decimal('15000.00')
-            }
-        ]
-
-        for order_data in orders_data:
-            order, created = ManagerOrder.objects.get_or_create(
-                manager=manager,
-                client_email=order_data['client_email'],
-                defaults=order_data
+        else:
+            self.stdout.write(
+                self.style.WARNING(f'Предложение уже существует: {offer.title}')
             )
-            if created:
-                self.stdout.write(f'Создан заказ: {order.client_name}')
 
-    def create_reports(self):
-        """Создаем тестовые отчеты"""
-        manager = Manager.objects.first()
-        if not manager:
-            return
+        # Получаем менеджера (если есть)
+        try:
+            manager = Manager.objects.first()
+            if manager:
+                # Создаем тестовую услугу
+                service, created = AdService.objects.get_or_create(
+                    name="Тестовая услуга Instagram",
+                    defaults={
+                        'manager': manager,
+                        'social_network': 'instagram',
+                        'price': Decimal('20000.00'),
+                        'description': 'Тестовая услуга для проверки CRUD функционала',
+                        'blogger': blogger,
+                        'is_active': True
+                    }
+                )
+                
+                if created:
+                    self.stdout.write(
+                        self.style.SUCCESS(f'Создана тестовая услуга: {service.name}')
+                    )
+                else:
+                    self.stdout.write(
+                        self.style.WARNING(f'Услуга уже существует: {service.name}')
+                    )
 
-        # Создаем отчеты за последние 4 недели
-        today = datetime.now().date()
-        for i in range(4):
-            week_start = today - timedelta(days=today.weekday() + 7*i)
-            week_end = week_start + timedelta(days=6)
-            
-            # Подсчитываем статистику
-            orders_count = ManagerOrder.objects.filter(
-                manager=manager,
-                created_at__date__range=[week_start, week_end]
-            ).count()
-            
-            total_revenue = ManagerOrder.objects.filter(
-                manager=manager,
-                created_at__date__range=[week_start, week_end]
-            ).aggregate(total=models.Sum('budget'))['total'] or Decimal('0.00')
-            
-            active_services = AdService.objects.filter(
-                manager=manager,
-                is_active=True
-            ).count()
+                # Создаем тестовый заказ
+                order, created = ManagerOrder.objects.get_or_create(
+                    client_name="Тестовый Клиент",
+                    defaults={
+                        'manager': manager,
+                        'order_type': 'personal',
+                        'status': 'new',
+                        'client_email': 'test@example.com',
+                        'client_phone': '+7 (999) 123-45-67',
+                        'service_description': 'Тестовый заказ для проверки функционала',
+                        'budget': Decimal('25000.00')
+                    }
+                )
+                
+                if created:
+                    self.stdout.write(
+                        self.style.SUCCESS(f'Создан тестовый заказ: #{order.id}')
+                    )
+                else:
+                    self.stdout.write(
+                        self.style.WARNING(f'Заказ уже существует: #{order.id}')
+                    )
 
-            report, created = WeeklyReport.objects.get_or_create(
-                manager=manager,
-                week_start=week_start,
-                week_end=week_end,
-                defaults={
-                    'total_orders': orders_count,
-                    'total_revenue': total_revenue,
-                    'active_services': active_services
-                }
+                # Создаем тестовый отчет
+                week_start = datetime.now().date() - timedelta(days=7)
+                week_end = datetime.now().date()
+                
+                report, created = WeeklyReport.objects.get_or_create(
+                    manager=manager,
+                    week_start=week_start,
+                    week_end=week_end,
+                    defaults={
+                        'total_orders': 5,
+                        'total_revenue': Decimal('125000.00'),
+                        'active_services': 3
+                    }
+                )
+                
+                if created:
+                    self.stdout.write(
+                        self.style.SUCCESS(f'Создан тестовый отчет: {report.week_start} - {report.week_end}')
+                    )
+                else:
+                    self.stdout.write(
+                        self.style.WARNING(f'Отчет уже существует: {report.week_start} - {report.week_end}')
+                    )
+
+                # Создаем тестовое уведомление
+                notification, created = Notification.objects.get_or_create(
+                    title="Тестовое уведомление",
+                    defaults={
+                        'manager': manager,
+                        'message': 'Это тестовое уведомление для проверки функционала',
+                        'is_read': False
+                    }
+                )
+                
+                if created:
+                    self.stdout.write(
+                        self.style.SUCCESS(f'Создано тестовое уведомление: {notification.title}')
+                    )
+                else:
+                    self.stdout.write(
+                        self.style.WARNING(f'Уведомление уже существует: {notification.title}')
+                    )
+
+            else:
+                self.stdout.write(
+                    self.style.ERROR('Не найден менеджер. Сначала создайте менеджера командой: python manage.py create_manager')
+                )
+
+        except Exception as e:
+            self.stdout.write(
+                self.style.ERROR(f'Ошибка при создании тестовых данных: {e}')
             )
-            
-            if created:
-                self.stdout.write(f'Создан отчет за {week_start} - {week_end}')
 
-    def create_notifications(self):
-        """Создаем тестовые уведомления"""
-        manager = Manager.objects.first()
-        if not manager:
-            return
-
-        notifications_data = [
-            {
-                'notification_type': 'service_created',
-                'title': 'Новая услуга создана',
-                'message': 'Услуга "Реклама в Instagram Stories" была успешно создана'
-            },
-            {
-                'notification_type': 'order_accepted',
-                'title': 'Заказ принят',
-                'message': 'Заказ #1 от Ивана Петрова был принят в работу'
-            },
-            {
-                'notification_type': 'order_completed',
-                'title': 'Заказ завершен',
-                'message': 'Заказ #3 от Алексея Новикова был успешно завершен'
-            },
-            {
-                'notification_type': 'report_generated',
-                'title': 'Отчет сгенерирован',
-                'message': 'Еженедельный отчет за текущую неделю был создан'
-            }
-        ]
-
-        for notification_data in notifications_data:
-            notification, created = Notification.objects.get_or_create(
-                manager=manager,
-                title=notification_data['title'],
-                defaults=notification_data
-            )
-            if created:
-                self.stdout.write(f'Создано уведомление: {notification.title}')
+        self.stdout.write(
+            self.style.SUCCESS('Тестовые данные созданы успешно!')
+        )
