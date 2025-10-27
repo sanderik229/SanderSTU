@@ -16,6 +16,9 @@ urlpatterns = [
     path("", views.home_page, name="home"),
     path("buy/", views.buy_ads_page, name="buy_ads"),
     path("order/", views.order_ads_page, name="order_ads"),
+    path("my-orders/", views.my_orders_page, name="my_orders"),
+    path("profile/", views.profile_page, name="profile"),
+    path("admin-panel/", views.admin_dashboard, name="admin_dashboard"),
 
     # REST API
     path("api/", include(router.urls)),

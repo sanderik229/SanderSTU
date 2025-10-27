@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -15,6 +15,32 @@ def buy_ads_page(request):
 
 def order_ads_page(request):
     return render(request, "shop/order.html")
+
+
+def my_orders_page(request):
+    return render(request, "shop/my_orders.html")
+
+
+def profile_page(request):
+    return render(request, "shop/profile.html")
+
+
+def admin_dashboard(request):
+    # Проверяем, что пользователь авторизован и является админом
+    if not request.user.is_authenticated:
+        return redirect('/')
+    
+    # Проверяем роль админа
+    is_admin = (
+        request.user.is_staff or 
+        request.user.is_superuser or 
+        (hasattr(request.user, 'profile') and request.user.profile.role == 'admin')
+    )
+    
+    if not is_admin:
+        return redirect('/')
+    
+    return render(request, "shop/admin_dashboard.html")
 
 
 MOCK_ADS = [
