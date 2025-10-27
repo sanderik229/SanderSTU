@@ -1,0 +1,1109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель — SanderStu</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
+    <style>
+        :root {
+            --admin-primary: #1e40af;
+            --admin-primary-dark: #1e3a8a;
+            --admin-secondary: #64748b;
+            --admin-success: #059669;
+            --admin-warning: #d97706;
+            --admin-danger: #dc2626;
+            --admin-bg: #f8fafc;
+            --admin-card: #ffffff;
+            --admin-border: #e2e8f0;
+            --admin-text: #1e293b;
+            --admin-text-light: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--admin-bg);
+            color: var(--admin-text);
+            line-height: 1.6;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .admin-sidebar {
+            width: 280px;
+            background: var(--admin-card);
+            border-right: 1px solid var(--admin-border);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .admin-logo {
+            padding: 0 24px 32px;
+            border-bottom: 1px solid var(--admin-border);
+            margin-bottom: 24px;
+        }
+
+        .admin-logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--admin-primary);
+        }
+
+        .admin-nav ul {
+            list-style: none;
+        }
+
+        .admin-nav li {
+            margin-bottom: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            color: var(--admin-text-light);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: #f1f5f9;
+            color: var(--admin-text);
+        }
+
+        .nav-item.active {
+            background: #eff6ff;
+            color: var(--admin-primary);
+            border-left-color: var(--admin-primary);
+        }
+
+        .nav-icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        /* Main Content */
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 24px;
+        }
+
+        .admin-header {
+            background: var(--admin-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--admin-text);
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--admin-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .user-info p {
+            font-size: 14px;
+            color: var(--admin-text-light);
+        }
+
+        /* Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--admin-card);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--admin-border);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--admin-text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-icon.primary { background: #eff6ff; color: var(--admin-primary); }
+        .stat-icon.success { background: #ecfdf5; color: var(--admin-success); }
+        .stat-icon.warning { background: #fffbeb; color: var(--admin-warning); }
+        .stat-icon.danger { background: #fef2f2; color: var(--admin-danger); }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--admin-text);
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .stat-change.positive { color: var(--admin-success); }
+        .stat-change.negative { color: var(--admin-danger); }
+
+        /* Tables */
+        .table-container {
+            background: var(--admin-card);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--admin-border);
+        }
+
+        .table-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--admin-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--admin-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--admin-primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--admin-secondary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--admin-success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--admin-danger);
+            color: white;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--admin-text);
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--admin-border);
+        }
+
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.active { background: #ecfdf5; color: var(--admin-success); }
+        .status-badge.inactive { background: #fef2f2; color: var(--admin-danger); }
+        .status-badge.pending { background: #fffbeb; color: var(--admin-warning); }
+
+        /* Login Form */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+        }
+
+        .login-card {
+            background: var(--admin-card);
+            border-radius: 16px;
+            padding: 48px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--admin-text);
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: var(--admin-text-light);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: var(--admin-text);
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--admin-border);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--admin-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .login-btn:hover {
+            background: var(--admin-primary-dark);
+        }
+
+        .login-btn:disabled {
+            background: var(--admin-secondary);
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: var(--admin-danger);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background: #ecfdf5;
+            color: var(--admin-success);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .admin-sidebar.open {
+                transform: translateX(0);
+            }
+
+            .admin-main {
+                margin-left: 0;
+                padding: 16px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .login-card {
+                margin: 16px;
+                padding: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if not user.is_authenticated %}
+    <!-- Login Page -->
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>Админ-панель</h1>
+                <p>Войдите в систему управления</p>
+            </div>
+            
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="successMessage" class="success-message" style="display: none;"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="login-btn" id="loginBtn">
+                    Войти
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <!-- Admin Dashboard -->
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h1>SanderStu Admin</h1>
+            </div>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="#dashboard" class="nav-item active" data-section="dashboard">
+                        <span class="nav-icon">📊</span> Дашборд
+                    </a></li>
+                    <li><a href="#users" class="nav-item" data-section="users">
+                        <span class="nav-icon">👥</span> Пользователи
+                    </a></li>
+                    <li><a href="#ads" class="nav-item" data-section="ads">
+                        <span class="nav-icon">📢</span> Реклама
+                    </a></li>
+                    <li><a href="#orders" class="nav-item" data-section="orders">
+                        <span class="nav-icon">📋</span> Заказы
+                    </a></li>
+                    <li><a href="#categories" class="nav-item" data-section="categories">
+                        <span class="nav-icon">🏷️</span> Категории
+                    </a></li>
+                    <li><a href="#reviews" class="nav-item" data-section="reviews">
+                        <span class="nav-icon">⭐</span> Отзывы
+                    </a></li>
+                    <li><a href="#analytics" class="nav-item" data-section="analytics">
+                        <span class="nav-icon">📈</span> Аналитика
+                    </a></li>
+                    <li><a href="#settings" class="nav-item" data-section="settings">
+                        <span class="nav-icon">⚙️</span> Настройки
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <h1 id="pageTitle">Дашборд</h1>
+                <div class="admin-user">
+                    <div class="user-avatar">
+                        {{ user.email|first|upper }}
+                    </div>
+                    <div class="user-info">
+                        <h3>{{ user.email }}</h3>
+                        <p>Администратор</p>
+                    </div>
+                    <button class="btn btn-danger" onclick="logout()">Выйти</button>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="admin-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Всего пользователей</span>
+                            <div class="stat-icon primary">👥</div>
+                        </div>
+                        <div class="stat-value" id="totalUsers">0</div>
+                        <div class="stat-change positive">+12% за месяц</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Активная реклама</span>
+                            <div class="stat-icon success">📢</div>
+                        </div>
+                        <div class="stat-value" id="activeAds">0</div>
+                        <div class="stat-change positive">+8% за месяц</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Заказы</span>
+                            <div class="stat-icon warning">📋</div>
+                        </div>
+                        <div class="stat-value" id="totalOrders">0</div>
+                        <div class="stat-change positive">+15% за месяц</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Выручка</span>
+                            <div class="stat-icon success">💰</div>
+                        </div>
+                        <div class="stat-value" id="totalRevenue">0 ₽</div>
+                        <div class="stat-change positive">+22% за месяц</div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Последние заказы</h3>
+                        <a href="#orders" class="btn btn-primary">Все заказы</a>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Клиент</th>
+                                <th>Email</th>
+                                <th>Услуга</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentOrdersTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 32px;">
+                                    Загрузка данных...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users" class="admin-section" style="display: none;">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Пользователи</h3>
+                        <button class="btn btn-primary" onclick="addUser()">Добавить пользователя</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Имя</th>
+                                <th>Роль</th>
+                                <th>Статус</th>
+                                <th>Дата регистрации</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 32px;">
+                                    Загрузка данных...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Ads Section -->
+            <section id="ads" class="admin-section" style="display: none;">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Реклама</h3>
+                        <button class="btn btn-primary" onclick="addAd()">Добавить рекламу</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Категория</th>
+                                <th>Цена</th>
+                                <th>Статус</th>
+                                <th>Популярность</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adsTable">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 32px;">
+                                    Загрузка данных...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="orders" class="admin-section" style="display: none;">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Заказы</h3>
+                        <div>
+                            <select id="orderStatusFilter" style="margin-right: 8px;">
+                                <option value="">Все статусы</option>
+                                <option value="new">Новый</option>
+                                <option value="in_progress">В работе</option>
+                                <option value="done">Выполнен</option>
+                                <option value="cancelled">Отменен</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="filterOrders()">Фильтр</button>
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Клиент</th>
+                                <th>Email</th>
+                                <th>Телефон</th>
+                                <th>Услуга</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTable">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 32px;">
+                                    Загрузка данных...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Categories Section -->
+            <section id="categories" class="admin-section" style="display: none;">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Категории</h3>
+                        <button class="btn btn-primary" onclick="addCategory()">Добавить категорию</button>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Slug</th>
+                                <th>Количество рекламы</th>
+                                <th>Дата создания</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 32px;">
+                                    Загрузка данных...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Reviews Section -->
+            <section id="reviews" class="admin-section" style="display: none;">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Отзывы</h3>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Пользователь</th>
+                                <th>Рейтинг</th>
+                                <th>Текст</th>
+                                <th>Реклама</th>
+                                <th>Дата</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reviewsTable">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 32px;">
+                                    Загрузка данных...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics" class="admin-section" style="display: none;">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Конверсия</span>
+                            <div class="stat-icon primary">📊</div>
+                        </div>
+                        <div class="stat-value">3.2%</div>
+                        <div class="stat-change positive">+0.5% за месяц</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Средний чек</span>
+                            <div class="stat-icon success">💳</div>
+                        </div>
+                        <div class="stat-value">15,500 ₽</div>
+                        <div class="stat-change positive">+8% за месяц</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Активные пользователи</span>
+                            <div class="stat-icon warning">👤</div>
+                        </div>
+                        <div class="stat-value">1,247</div>
+                        <div class="stat-change positive">+12% за месяц</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Время на сайте</span>
+                            <div class="stat-icon danger">⏱️</div>
+                        </div>
+                        <div class="stat-value">4:32 мин</div>
+                        <div class="stat-change positive">+15% за месяц</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="admin-section" style="display: none;">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Настройки системы</h3>
+                    </div>
+                    <div style="padding: 24px;">
+                        <div class="form-group">
+                            <label>Название сайта</label>
+                            <input type="text" value="SanderStu" style="margin-bottom: 16px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Email администратора</label>
+                            <input type="email" value="admin@sanderstu.com" style="margin-bottom: 16px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Телефон поддержки</label>
+                            <input type="tel" value="+7 (999) 123-45-67" style="margin-bottom: 16px;">
+                        </div>
+                        <button class="btn btn-primary">Сохранить настройки</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    {% endif %}
+
+    <script>
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Вход...';
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/v2/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Сохраняем токены
+                    localStorage.setItem('access', data.access);
+                    localStorage.setItem('refresh', data.refresh);
+                    localStorage.setItem('userEmail', email);
+                    
+                    successMessage.textContent = 'Успешный вход! Перенаправление...';
+                    successMessage.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    errorMessage.textContent = data.detail || 'Ошибка входа';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Ошибка соединения';
+                errorMessage.style.display = 'block';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Войти';
+            }
+        });
+
+        // Logout functionality
+        function logout() {
+            localStorage.removeItem('access');
+            localStorage.removeItem('refresh');
+            localStorage.removeItem('userEmail');
+            window.location.reload();
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all items
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                
+                // Add active class to clicked item
+                this.classList.add('active');
+                
+                // Hide all sections
+                document.querySelectorAll('.admin-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // Show selected section
+                const sectionId = this.getAttribute('data-section');
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.style.display = 'block';
+                }
+                
+                // Update page title
+                const pageTitle = document.getElementById('pageTitle');
+                pageTitle.textContent = this.textContent.trim();
+                
+                // Load section data
+                loadSectionData(sectionId);
+            });
+        });
+
+        // Load data for sections
+        async function loadSectionData(section) {
+            const token = localStorage.getItem('access');
+            if (!token) return;
+            
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+            
+            try {
+                switch(section) {
+                    case 'dashboard':
+                        await loadDashboardData(headers);
+                        break;
+                    case 'users':
+                        await loadUsersData(headers);
+                        break;
+                    case 'ads':
+                        await loadAdsData(headers);
+                        break;
+                    case 'orders':
+                        await loadOrdersData(headers);
+                        break;
+                    case 'categories':
+                        await loadCategoriesData(headers);
+                        break;
+                    case 'reviews':
+                        await loadReviewsData(headers);
+                        break;
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData(headers) {
+            // Load stats
+            const [usersRes, adsRes, ordersRes] = await Promise.all([
+                fetch('/api/v2/admin/users/', { headers }),
+                fetch('/api/ads/', { headers }),
+                fetch('/api/orders/', { headers })
+            ]);
+            
+            const users = await usersRes.json();
+            const ads = await adsRes.json();
+            const orders = await ordersRes.json();
+            
+            document.getElementById('totalUsers').textContent = users.count || 0;
+            document.getElementById('activeAds').textContent = ads.results?.filter(ad => ad.is_active).length || 0;
+            document.getElementById('totalOrders').textContent = orders.count || 0;
+            
+            // Load recent orders
+            const recentOrders = orders.results?.slice(0, 5) || [];
+            const tbody = document.getElementById('recentOrdersTable');
+            tbody.innerHTML = recentOrders.map(order => `
+                <tr>
+                    <td>#${order.id}</td>
+                    <td>${order.customer_name}</td>
+                    <td>${order.email}</td>
+                    <td>${order.ad?.title || 'Не указано'}</td>
+                    <td><span class="status-badge ${order.status}">${order.status}</span></td>
+                    <td>${new Date(order.created_at).toLocaleDateString('ru-RU')}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="6" style="text-align: center;">Нет данных</td></tr>';
+        }
+
+        // Load users data
+        async function loadUsersData(headers) {
+            const response = await fetch('/api/v2/admin/users/', { headers });
+            const data = await response.json();
+            
+            const tbody = document.getElementById('usersTable');
+            tbody.innerHTML = data.results?.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.email}</td>
+                    <td>${user.profile?.full_name || 'Не указано'}</td>
+                    <td>${user.profile?.role || 'user'}</td>
+                    <td><span class="status-badge ${user.is_active ? 'active' : 'inactive'}">${user.is_active ? 'Активен' : 'Неактивен'}</span></td>
+                    <td>${new Date(user.date_joined).toLocaleDateString('ru-RU')}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="editUser(${user.id})">Редактировать</button>
+                        <button class="btn btn-danger" onclick="deleteUser(${user.id})">Удалить</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="7" style="text-align: center;">Нет данных</td></tr>';
+        }
+
+        // Load ads data
+        async function loadAdsData(headers) {
+            const response = await fetch('/api/ads/', { headers });
+            const data = await response.json();
+            
+            const tbody = document.getElementById('adsTable');
+            tbody.innerHTML = data.results?.map(ad => `
+                <tr>
+                    <td>${ad.id}</td>
+                    <td>${ad.title}</td>
+                    <td>${ad.category?.name || 'Не указано'}</td>
+                    <td>${ad.price.toLocaleString('ru-RU')} ₽</td>
+                    <td><span class="status-badge ${ad.is_active ? 'active' : 'inactive'}">${ad.is_active ? 'Активна' : 'Неактивна'}</span></td>
+                    <td>${ad.popularity}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="editAd(${ad.id})">Редактировать</button>
+                        <button class="btn btn-danger" onclick="deleteAd(${ad.id})">Удалить</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="7" style="text-align: center;">Нет данных</td></tr>';
+        }
+
+        // Load orders data
+        async function loadOrdersData(headers) {
+            const response = await fetch('/api/orders/', { headers });
+            const data = await response.json();
+            
+            const tbody = document.getElementById('ordersTable');
+            tbody.innerHTML = data.results?.map(order => `
+                <tr>
+                    <td>#${order.id}</td>
+                    <td>${order.customer_name}</td>
+                    <td>${order.email}</td>
+                    <td>${order.phone}</td>
+                    <td>${order.ad?.title || 'Не указано'}</td>
+                    <td><span class="status-badge ${order.status}">${order.status}</span></td>
+                    <td>${new Date(order.created_at).toLocaleDateString('ru-RU')}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="editOrder(${order.id})">Редактировать</button>
+                        <button class="btn btn-success" onclick="updateOrderStatus(${order.id})">Изменить статус</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="8" style="text-align: center;">Нет данных</td></tr>';
+        }
+
+        // Load categories data
+        async function loadCategoriesData(headers) {
+            const response = await fetch('/api/categories/', { headers });
+            const data = await response.json();
+            
+            const tbody = document.getElementById('categoriesTable');
+            tbody.innerHTML = data.results?.map(category => `
+                <tr>
+                    <td>${category.id}</td>
+                    <td>${category.name}</td>
+                    <td>${category.slug}</td>
+                    <td>${category.ads?.length || 0}</td>
+                    <td>${new Date(category.created_at).toLocaleDateString('ru-RU')}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="editCategory(${category.id})">Редактировать</button>
+                        <button class="btn btn-danger" onclick="deleteCategory(${category.id})">Удалить</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="6" style="text-align: center;">Нет данных</td></tr>';
+        }
+
+        // Load reviews data
+        async function loadReviewsData(headers) {
+            const response = await fetch('/api/reviews/', { headers });
+            const data = await response.json();
+            
+            const tbody = document.getElementById('reviewsTable');
+            tbody.innerHTML = data.results?.map(review => `
+                <tr>
+                    <td>${review.id}</td>
+                    <td>${review.user_name}</td>
+                    <td>${'⭐'.repeat(review.rating)}</td>
+                    <td>${review.text.substring(0, 50)}${review.text.length > 50 ? '...' : ''}</td>
+                    <td>${review.ad?.title || 'Не указано'}</td>
+                    <td>${new Date(review.created_at).toLocaleDateString('ru-RU')}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="editReview(${review.id})">Редактировать</button>
+                        <button class="btn btn-danger" onclick="deleteReview(${review.id})">Удалить</button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="7" style="text-align: center;">Нет данных</td></tr>';
+        }
+
+        // Placeholder functions for actions
+        function addUser() { alert('Функция добавления пользователя'); }
+        function addAd() { alert('Функция добавления рекламы'); }
+        function addCategory() { alert('Функция добавления категории'); }
+        function editUser(id) { alert(`Редактирование пользователя ${id}`); }
+        function editAd(id) { alert(`Редактирование рекламы ${id}`); }
+        function editOrder(id) { alert(`Редактирование заказа ${id}`); }
+        function editCategory(id) { alert(`Редактирование категории ${id}`); }
+        function editReview(id) { alert(`Редактирование отзыва ${id}`); }
+        function deleteUser(id) { alert(`Удаление пользователя ${id}`); }
+        function deleteAd(id) { alert(`Удаление рекламы ${id}`); }
+        function deleteCategory(id) { alert(`Удаление категории ${id}`); }
+        function deleteReview(id) { alert(`Удаление отзыва ${id}`); }
+        function updateOrderStatus(id) { alert(`Изменение статуса заказа ${id}`); }
+        function filterOrders() { alert('Фильтрация заказов'); }
+
+        // Initialize dashboard on load
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if user.is_authenticated %}
+            loadSectionData('dashboard');
+            {% endif %}
+        });
+    </script>
+</body>
+</html>

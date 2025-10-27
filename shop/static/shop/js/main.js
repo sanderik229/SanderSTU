@@ -1,8 +1,20 @@
 const storage = {
-  setTokens: (access, refresh) => { localStorage.setItem('access', access); localStorage.setItem('refresh', refresh||''); },
+  setTokens: (access, refresh) => { 
+    localStorage.setItem('access', access); 
+    localStorage.setItem('refresh', refresh||''); 
+    // Сохраняем токен в cookies для веб-запросов
+    document.cookie = `access_token=${access}; path=/; max-age=3600; SameSite=Lax`;
+  },
   getAccess: () => localStorage.getItem('access'),
   getRefresh: () => localStorage.getItem('refresh'),
-  clear: () => { localStorage.removeItem('access'); localStorage.removeItem('refresh'); localStorage.removeItem('userEmail'); localStorage.removeItem('userFullName'); },
+  clear: () => { 
+    localStorage.removeItem('access'); 
+    localStorage.removeItem('refresh'); 
+    localStorage.removeItem('userEmail'); 
+    localStorage.removeItem('userFullName'); 
+    // Очищаем cookies
+    document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  },
   setEmail: (email) => localStorage.setItem('userEmail', email),
   getEmail: () => localStorage.getItem('userEmail'),
   setFullName: (fullName) => localStorage.setItem('userFullName', fullName),
@@ -106,17 +118,75 @@ function setupGlobalSearch(){
   const btn = $('#globalSearchBtn');
   const box = $('#globalSearchResults');
   if(!input || !btn || !box) return;
+  
   function perform(){
-    const q = input.value.trim();
-    if(!q){ box.style.display='none'; box.innerHTML=''; return; }
-    api.listAds({q}).then(({results})=>{
-      box.innerHTML = results.map(r=>`<div class="search-item"><img src="${r.image}"><div><div>${r.title}</div><small>${r.price.toLocaleString('ru-RU')} ₽ · ${r.category}</small></div></div>`).join('');
-      box.style.display = results.length ? 'block' : 'none';
+    const searchQuery = input.value.trim();
+    if(!searchQuery){ 
+      box.style.display='none'; 
+      box.innerHTML=''; 
+      return; 
+    }
+    
+    // Показываем индикатор загрузки
+    box.innerHTML = '<div class="search-item">Поиск...</div>';
+    box.style.display = 'block';
+    
+    api.listAds({search: searchQuery}).then(({results})=>{
+      if(results && results.length > 0) {
+        const resultsHtml = results.map(r=>`<div class="search-item" onclick="window.location.href='/search/?q=${encodeURIComponent(searchQuery)}'">
+          <img src="${r.image || '/static/shop/img/banner_main.svg'}" alt="${r.title}">
+          <div>
+            <div>${r.title}</div>
+            <small>${r.price.toLocaleString('ru-RU')} ₽ · ${r.category}</small>
+          </div>
+        </div>`).join('');
+        
+        // Добавляем ссылку "Показать все результаты"
+        const showAllLink = `<div class="search-item" style="border-top: 1px solid var(--border); font-weight: 500; color: var(--accent);" onclick="window.location.href='/search/?q=${encodeURIComponent(searchQuery)}'">
+          <div style="text-align: center; width: 100%;">Показать все результаты (${results.length})</div>
+        </div>`;
+        
+        box.innerHTML = resultsHtml + showAllLink;
+      } else {
+        box.innerHTML = '<div class="search-item">Ничего не найдено</div>';
+      }
+      box.style.display = 'block';
+    }).catch(error => {
+      console.error('Search error:', error);
+      box.innerHTML = '<div class="search-item">Ошибка поиска</div>';
+      box.style.display = 'block';
     });
   }
-  btn.addEventListener('click', perform);
-  input.addEventListener('input', ()=>{ if(input.value.length>=2){ perform(); } else { box.style.display='none'; } });
-  document.addEventListener('click', (e)=>{ if(!box.contains(e.target) && e.target!==input){ box.style.display='none'; }});
+  
+  btn.addEventListener('click', () => {
+    const searchQuery = input.value.trim();
+    if (searchQuery) {
+      window.location.href = `/search/?q=${encodeURIComponent(searchQuery)}`;
+    } else {
+      perform();
+    }
+  });
+  input.addEventListener('input', ()=>{ 
+    if(input.value.length>=2){ 
+      perform(); 
+    } else { 
+      box.style.display='none'; 
+    } 
+  });
+  
+  // Закрытие результатов при клике вне области поиска
+  document.addEventListener('click', (e)=>{ 
+    if(!box.contains(e.target) && e.target!==input && e.target!==btn){ 
+      box.style.display='none'; 
+    } 
+  });
+  
+  // Поиск по Enter
+  input.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') {
+      perform();
+    }
+  });
 }
 
 function setupBuyPage(){
@@ -309,15 +379,38 @@ function updateAuthUI(){
   const authActions = $('#authActions');
   const authUser = $('#authUser');
   const nameSpan = $('#userNameDisplay');
+  const adminBtn = $('#menuAdmin');
+  
   if(access){
     authActions.style.display='none';
     authUser.style.display='flex';
     nameSpan.textContent = storage.getEmail() || '';
+    
+    // Проверяем, является ли пользователь администратором
+    checkAdminStatus().then(isAdmin => {
+      if(adminBtn) {
+        adminBtn.style.display = isAdmin ? 'block' : 'none';
+      }
+    });
   } else {
     authActions.style.display='flex';
     authUser.style.display='none';
     if(nameSpan) nameSpan.textContent = '';
+    if(adminBtn) adminBtn.style.display = 'none';
   }
+}
+
+async function checkAdminStatus() {
+  try {
+    const me = await api.me();
+    if(me) {
+      const role = me.profile && me.profile.role ? me.profile.role : 'user';
+      return role === 'admin' || me.is_staff || me.is_superuser;
+    }
+  } catch(e) {
+    console.error('Ошибка проверки статуса администратора:', e);
+  }
+  return false;
 }
 
 async function postLoginFlow(){
@@ -329,7 +422,8 @@ async function postLoginFlow(){
       storage.setEmail(fullName);
       updateAuthUI();
       const role = me.profile && me.profile.role ? me.profile.role : 'user';
-      if(role === 'admin'){
+      const isAdmin = role === 'admin' || me.is_staff || me.is_superuser;
+      if(isAdmin){
         window.location.assign('/admin-panel/');
       } else {
         // user dashboard could be added; for now, stay on home
@@ -720,13 +814,264 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const userMenu = $('#userMenu');
   const menuProfile = $('#menuProfile');
   const menuOrders = $('#menuOrders');
+  const menuAdmin = $('#menuAdmin');
   if(userNameBtn && userMenu){
     userNameBtn.addEventListener('click', (e)=>{ e.stopPropagation(); const open = userMenu.style.display==='block'; userMenu.style.display = open ? 'none' : 'block'; userNameBtn.setAttribute('aria-expanded', (!open).toString()); });
     document.addEventListener('click', ()=>{ userMenu.style.display='none'; userNameBtn.setAttribute('aria-expanded','false'); });
   }
   if(menuProfile){ menuProfile.addEventListener('click', ()=>{ userMenu.style.display='none'; window.location.assign('/profile/'); }); }
   if(menuOrders){ menuOrders.addEventListener('click', ()=>{ userMenu.style.display='none'; window.location.assign('/my-orders/'); }); }
+  if(menuAdmin){ menuAdmin.addEventListener('click', ()=>{ userMenu.style.display='none'; window.location.assign('/admin-panel/'); }); }
   console.log('All setup functions completed');
+});
+
+// Package details functionality
+const packageData = {
+  start: {
+    name: 'Старт',
+    price: '15 000 ₽',
+    description: 'Идеальный пакет для начинающих предпринимателей и малого бизнеса. Помогает проверить гипотезы и найти эффективные каналы продвижения.',
+    features: [
+      'Анализ целевой аудитории',
+      'Настройка рекламы в 2-3 каналах',
+      'Базовые креативы и тексты',
+      'Еженедельная отчетность',
+      'Поддержка менеджера',
+      'Срок выполнения: 7-10 дней'
+    ]
+  },
+  growth: {
+    name: 'Рост',
+    price: '35 000 ₽',
+    description: 'Для бизнеса, который хочет масштабировать успешные каналы и оптимизировать рекламные кампании для максимальной эффективности.',
+    features: [
+      'Все из пакета "Старт"',
+      'Настройка рекламы в 5-7 каналах',
+      'A/B тестирование креативов',
+      'Оптимизация по конверсиям',
+      'Еженедельная аналитика и корректировки',
+      'Персональные рекомендации',
+      'Срок выполнения: 14-21 день'
+    ]
+  },
+  leader: {
+    name: 'Лидер',
+    price: '75 000 ₽',
+    description: 'Максимальный охват и бренд-перформанс для крупного бизнеса. Комплексное продвижение с фокусом на узнаваемость бренда.',
+    features: [
+      'Все из пакета "Рост"',
+      'Настройка рекламы в 10+ каналах',
+      'Видео-креативы и брендинг',
+      'Интеграция с CRM и аналитикой',
+      'Ежедневный мониторинг и корректировки',
+      'Персональный менеджер 24/7',
+      'Месячная стратегия развития',
+      'Срок выполнения: 21-30 дней'
+    ]
+  }
+};
+
+function showPackageModal(packageType) {
+  const modal = $('#packageModal');
+  const content = $('#packageContent');
+  const data = packageData[packageType];
+  
+  if (!data) return;
+  
+  content.innerHTML = `
+    <div class="package-details">
+      <h2>${data.name}</h2>
+      <div class="price">${data.price}</div>
+      <p class="package-description">${data.description}</p>
+      <ul class="package-features">
+        ${data.features.map(feature => `<li>${feature}</li>`).join('')}
+      </ul>
+      <button class="package-order-btn" onclick="orderPackage('${packageType}')">
+        Заказать пакет "${data.name}"
+      </button>
+    </div>
+  `;
+  
+  modal.style.display = 'block';
+}
+
+function orderPackage(packageType) {
+  // Закрываем модальное окно пакета
+  $('#packageModal').style.display = 'none';
+  
+  // Открываем форму заказа с предзаполненными данными
+  const data = packageData[packageType];
+  if (data) {
+    // Переходим на страницу заказа с параметрами пакета
+    window.location.href = `/order/?package=${packageType}&name=${encodeURIComponent(data.name)}&price=${encodeURIComponent(data.price)}`;
+  }
+}
+
+function closePackageModal() {
+  $('#packageModal').style.display = 'none';
+}
+
+// Payment functionality
+function showPaymentModal(orderId, amount) {
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.display = 'block';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <span class="close" onclick="closePaymentModal()">&times;</span>
+      <div class="payment-form">
+        <h3>Оплата заказа #${orderId}</h3>
+        <p>Сумма к оплате: <strong>${amount} ₽</strong></p>
+        
+        <div class="form-group">
+          <label for="cardNumber">Номер карты</label>
+          <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+        </div>
+        
+        <div class="payment-row">
+          <div class="form-group">
+            <label for="expiryDate">Срок действия</label>
+            <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5">
+          </div>
+          <div class="form-group">
+            <label for="cvv">CVV</label>
+            <input type="text" id="cvv" placeholder="123" maxlength="3">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="cardholderName">Имя держателя карты</label>
+          <input type="text" id="cardholderName" placeholder="IVAN IVANOV">
+        </div>
+        
+        <button class="pay-btn" onclick="processPayment(${orderId})">
+          Оплатить ${amount} ₽
+        </button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // Добавляем обработчики для форматирования
+  const cardNumber = modal.querySelector('#cardNumber');
+  const expiryDate = modal.querySelector('#expiryDate');
+  
+  cardNumber.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\s/g, '').replace(/[^0-9]/gi, '');
+    let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+    e.target.value = formattedValue;
+  });
+  
+  expiryDate.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+      value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    }
+    e.target.value = value;
+  });
+}
+
+function closePaymentModal() {
+  const modal = document.querySelector('.modal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+function processPayment(orderId) {
+  const cardNumber = $('#cardNumber').value.replace(/\s/g, '');
+  const expiryDate = $('#expiryDate').value;
+  const cvv = $('#cvv').value;
+  const cardholderName = $('#cardholderName').value;
+  
+  // Простая валидация
+  if (!cardNumber || cardNumber.length < 16) {
+    showToast('Введите корректный номер карты', 'error');
+    return;
+  }
+  
+  if (!expiryDate || expiryDate.length < 5) {
+    showToast('Введите корректную дату истечения', 'error');
+    return;
+  }
+  
+  if (!cvv || cvv.length < 3) {
+    showToast('Введите корректный CVV код', 'error');
+    return;
+  }
+  
+  if (!cardholderName) {
+    showToast('Введите имя держателя карты', 'error');
+    return;
+  }
+  
+  // Отключаем кнопку
+  const payBtn = document.querySelector('.pay-btn');
+  payBtn.disabled = true;
+  payBtn.textContent = 'Обработка...';
+  
+  // Имитируем обработку платежа
+  setTimeout(() => {
+    // Отправляем запрос на сервер для обновления статуса заказа
+    fetch(`/api/v2/orders/${orderId}/pay/`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({
+        payment_method: 'card',
+        card_number: cardNumber.substring(0, 4) + '****' + cardNumber.substring(cardNumber.length - 4),
+        amount: document.querySelector('.payment-form p strong').textContent.replace(/[^\d]/g, '')
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showToast('Платеж успешно обработан!', 'success');
+        closePaymentModal();
+        // Обновляем список заказов
+        if (typeof loadOrders === 'function') {
+          loadOrders();
+        }
+      } else {
+        showToast('Ошибка при обработке платежа', 'error');
+        payBtn.disabled = false;
+        payBtn.textContent = 'Оплатить';
+      }
+    })
+    .catch(error => {
+      console.error('Payment error:', error);
+      showToast('Ошибка при обработке платежа', 'error');
+      payBtn.disabled = false;
+      payBtn.textContent = 'Оплатить';
+    });
+  }, 2000);
+}
+
+// Инициализация обработчиков пакетов
+document.addEventListener('DOMContentLoaded', function() {
+  // Обработчики для кнопок "Подробнее"
+  document.querySelectorAll('.package-details-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const packageType = this.getAttribute('data-package');
+      showPackageModal(packageType);
+    });
+  });
+  
+  // Обработчик для закрытия модального окна пакета
+  const packageModal = $('#packageModal');
+  if (packageModal) {
+    const closeBtn = packageModal.querySelector('.close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closePackageModal);
+    }
+    
+    // Закрытие по клику вне модального окна
+    packageModal.addEventListener('click', function(e) {
+      if (e.target === packageModal) {
+        closePackageModal();
+      }
+    });
+  }
 });
 
 

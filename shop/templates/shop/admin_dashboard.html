@@ -64,8 +64,9 @@
                 </div>
             </header>
 
-            <!-- Dashboard Content -->
-            <div class="admin-content" id="admin-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="admin-section">
+            <div class="admin-content">
                 <!-- KPI Cards -->
                 <div class="kpi-grid">
                     <div class="kpi-card">
@@ -105,19 +106,16 @@
                 <!-- Charts Row -->
                 <div class="charts-row">
                     <div class="chart-container">
-                        <h3>Выручка по месяцам</h3>
                         <canvas id="revenueChart"></canvas>
                     </div>
                     <div class="chart-container">
-                        <h3>Популярные услуги</h3>
                         <canvas id="servicesChart"></canvas>
                     </div>
                 </div>
 
                 <!-- Recent Orders -->
                 <div class="recent-section">
-                    <div class="section-header">
-                        <h3>Последние заказы</h3>
+                    <div class="section-actions">
                         <a href="#orders" class="view-all">Все заказы →</a>
                     </div>
                     <div class="recent-orders" id="recentOrders">
@@ -127,8 +125,7 @@
 
                 <!-- Notifications -->
                 <div class="notifications-section">
-                    <div class="section-header">
-                        <h3>Уведомления</h3>
+                    <div class="section-actions">
                         <span class="notification-count" id="notificationCount">0</span>
                     </div>
                     <div class="notifications" id="notifications">
@@ -136,162 +133,209 @@
                     </div>
                 </div>
             </div>
+            </section>
 
             <!-- Services Section -->
             <section id="services" class="admin-section">
-                <div class="section-header">
-                    <h3>Управление услугами</h3>
-                    <button class="btn btn-primary" onclick="adminDashboard.addService()">Добавить услугу</button>
-                </div>
-                <div class="services-grid" id="servicesGrid">
-                    <!-- Services will be loaded here -->
+                <div class="admin-content">
+                    <div class="data-table-container">
+                        <div class="table-header">
+                            <h3>Услуги</h3>
+                            <button class="btn btn-primary" onclick="adminDashboard.addService()">+ Добавить услугу</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Название</th>
+                                    <th>Описание</th>
+                                    <th>Цена</th>
+                                    <th>Соцсеть</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="servicesTable"></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
             <!-- Orders Section -->
             <section id="orders" class="admin-section">
-                <div class="section-header">
-                    <h3>Управление заказами</h3>
-                    <div class="filters">
-                        <select id="orderStatusFilter">
-                            <option value="">Все статусы</option>
-                            <option value="new">Новый</option>
-                            <option value="paid">Оплачен</option>
-                            <option value="in_progress">В работе</option>
-                            <option value="done">Выполнен</option>
-                            <option value="cancelled">Отменен</option>
-                        </select>
-                        <input type="text" id="orderSearch" placeholder="Поиск по заказам...">
-                        <button class="btn btn-primary">Применить</button>
+                <div class="admin-content">
+                    <div class="data-table-container">
+                        <div class="table-header">
+                            <h3>Заказы</h3>
+                        </div>
+                        <div class="table-filters">
+                            <div class="filters">
+                                <select id="orderStatusFilter">
+                                    <option value="">Все статусы</option>
+                                    <option value="new">Новый</option>
+                                    <option value="paid">Оплачен</option>
+                                    <option value="in_progress">В работе</option>
+                                    <option value="done">Выполнен</option>
+                                    <option value="cancelled">Отменен</option>
+                                </select>
+                                <input type="text" id="orderSearch" placeholder="Поиск по заказам...">
+                                <button class="btn btn-primary" onclick="adminDashboard.filterOrders()">Применить</button>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Клиент</th>
+                                    <th>Email</th>
+                                    <th>Услуга</th>
+                                    <th>Тип</th>
+                                    <th>Статус</th>
+                                    <th>Дата</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable"></tbody>
+                        </table>
                     </div>
-                </div>
-                <div class="data-table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Клиент</th>
-                                <th>Услуга</th>
-                                <th>Тип</th>
-                                <th>Статус</th>
-                                <th>Дата</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ordersTable">
-                            <!-- Orders will be loaded here -->
-                        </tbody>
-                    </table>
                 </div>
             </section>
 
             <!-- Users Section -->
             <section id="users" class="admin-section">
-                <div class="section-header">
-                    <h3>Управление пользователями</h3>
-                    <button class="btn btn-primary" onclick="adminDashboard.addUser()">Добавить пользователя</button>
-                    <div class="filters">
-                        <select id="userRoleFilter">
-                            <option value="">Все роли</option>
-                            <option value="user">Пользователь</option>
-                            <option value="admin">Администратор</option>
-                        </select>
-                        <input type="text" id="userSearch" placeholder="Поиск по пользователям...">
-                        <button class="btn btn-primary">Применить</button>
-                    </div>
-                </div>
-                <div class="data-table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Email</th>
-                                <th>ФИО</th>
-                                <th>Роль</th>
-                                <th>Статус</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTable">
-                            <!-- Users will be loaded here -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Analytics Section -->
-            <section id="analytics" class="admin-section">
-                <div class="section-header">
-                    <h3>Аналитика и статистика</h3>
-                    <div class="filters">
-                        <select id="analyticsPeriod">
-                            <option value="month">Месяц</option>
-                            <option value="week">Неделя</option>
-                            <option value="day">День</option>
-                        </select>
-                        <select id="analyticsCategory">
-                            <option value="">Все категории</option>
-                        </select>
-                        <button class="btn btn-primary">Применить</button>
-                    </div>
-                </div>
-                <div class="analytics-grid">
-                    <div class="chart-container">
-                        <h3>Выручка по периодам</h3>
-                        <canvas id="analyticsRevenueChart"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <h3>Активность пользователей</h3>
-                        <canvas id="analyticsUsersChart"></canvas>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Settings Section -->
-            <section id="settings" class="admin-section">
-                <div class="section-header">
-                    <h3>Настройки системы</h3>
-                    <button class="btn btn-primary">Сохранить настройки</button>
-                </div>
-                <div class="settings-grid">
-                    <div class="setting-card">
-                        <h4>Контактная информация</h4>
-                        <label>Email компании<input type="email" value="info@sanderstu.com"></label>
-                        <label>Телефон компании<input type="tel" value="+7 (495) 123-45-67"></label>
-                    </div>
-                    <div class="setting-card">
-                        <h4>Система</h4>
-                        <label>Название<input type="text" value="SanderStu"></label>
-                        <label>Описание<textarea>SanderStu - платформа для размещения рекламы у блогеров</textarea></label>
+                <div class="admin-content">
+                    <div class="data-table-container">
+                        <div class="table-header">
+                            <h3>Пользователи</h3>
+                            <button class="btn btn-primary" onclick="adminDashboard.addUser()">+ Добавить пользователя</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                    <th>ФИО</th>
+                                    <th>Роль</th>
+                                    <th>Дата регистрации</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable"></tbody>
+                        </table>
                     </div>
                 </div>
             </section>
 
             <!-- Reports Section -->
             <section id="reports" class="admin-section">
-                <div class="section-header">
-                    <h3>Отчеты и экспорт данных</h3>
-                    <div class="filters">
-                        <select id="reportPeriod">
-                            <option value="month">Месяц</option>
-                            <option value="year">Год</option>
-                        </select>
-                        <button class="btn btn-primary" onclick="adminDashboard.generateMonthlyReport()">Генерировать отчет</button>
-                        <button class="btn btn-secondary" onclick="adminDashboard.exportOrders('csv')">Экспорт заказов</button>
-                        <button class="btn btn-secondary" onclick="adminDashboard.exportUsers('csv')">Экспорт пользователей</button>
-                        <button class="btn btn-secondary" onclick="adminDashboard.exportServices('csv')">Экспорт услуг</button>
+                <div class="admin-content">
+                    <div class="data-table-container">
+                        <div class="table-header">
+                            <h3>Отчеты</h3>
+                        </div>
+                        <div class="reports-content">
+                            <div class="report-card">
+                                <h4>Ежемесячный отчет</h4>
+                                <p>Полный отчет о продажах, заказах и пользователях за текущий месяц в формате PDF.</p>
+                                <button class="btn btn-primary" onclick="adminDashboard.generateMonthlyReportPDF()">
+                                    📄 Скачать PDF
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="reports-grid">
-                    <div class="report-card">
-                        <h4>Ежемесячный отчет</h4>
-                        <p>Полный отчет о продажах, заказах и пользователях за текущий месяц.</p>
-                        <button class="btn btn-primary" onclick="adminDashboard.generateMonthlyReport()">Скачать</button>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics" class="admin-section">
+                <div class="admin-content">
+                    <div class="charts-row">
+                        <div class="chart-container">
+                            <h3>Топ 5 популярных услуг</h3>
+                            <canvas id="popularServicesChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Распределение заказов по статусам</h3>
+                            <canvas id="ordersStatusChart"></canvas>
+                        </div>
                     </div>
-                    <div class="report-card">
-                        <h4>Отчет по услугам</h4>
-                        <p>Детальный отчет по популярности и выручке от каждой услуги.</p>
-                        <button class="btn btn-primary" onclick="adminDashboard.exportServices('csv')">Скачать</button>
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon">📈</div>
+                            <div class="kpi-content">
+                                <h3>Выручка за месяц</h3>
+                                <div class="kpi-value" id="monthRevenue">0 ₽</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">📊</div>
+                            <div class="kpi-content">
+                                <h3>Активные заказы</h3>
+                                <div class="kpi-value" id="activeOrdersCount">0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">👥</div>
+                            <div class="kpi-content">
+                                <h3>Новые пользователи</h3>
+                                <div class="kpi-value" id="newUsersCount">0</div>
+                            </div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-icon">💰</div>
+                            <div class="kpi-content">
+                                <h3>Средний чек</h3>
+                                <div class="kpi-value" id="avgCheck">0 ₽</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="admin-section">
+                <div class="admin-content">
+                    <div class="data-table-container">
+                        <div class="table-header">
+                            <h3>Настройки системы</h3>
+                        </div>
+                        <div class="settings-grid">
+                            <div class="setting-card">
+                                <h4>🔔 Уведомления</h4>
+                                <label>
+                                    <input type="checkbox" checked> Email уведомления о новых заказах
+                                </label>
+                                <label>
+                                    <input type="checkbox" checked> Уведомления о регистрации пользователей
+                                </label>
+                                <label>
+                                    <input type="checkbox"> SMS уведомления
+                                </label>
+                            </div>
+                            <div class="setting-card">
+                                <h4>👥 Управление пользователями</h4>
+                                <label>
+                                    <input type="checkbox" checked> Автоматическая модерация новых пользователей
+                                </label>
+                                <label>
+                                    <input type="checkbox"> Требовать подтверждения email
+                                </label>
+                            </div>
+                            <div class="setting-card">
+                                <h4>📊 Безопасность</h4>
+                                <label>Время сессии (минуты):
+                                    <input type="number" value="30" min="5" max="1440">
+                                </label>
+                                <label>Максимальное количество попыток входа:
+                                    <input type="number" value="5" min="3" max="10">
+                                </label>
+                            </div>
+                            <div class="setting-card">
+                                <h4>💾 Резервное копирование</h4>
+                                <p>Последнее копирование: 27.10.2025 11:30</p>
+                                <button class="btn btn-primary" onclick="adminDashboard.backupDatabase()">Создать копию сейчас</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -299,47 +343,74 @@
     </div>
 </main>
 
-<!-- Toast Notifications -->
-<div id="adminToast" class="admin-toast"></div>
-
-<!-- Orders Modal -->
-<div id="ordersModal" class="modal" style="display: none;">
-    <div class="modal-backdrop" onclick="closeOrdersModal()"></div>
-    <div class="modal-dialog modal-large">
+<!-- Service Modal -->
+<div id="serviceModal" class="modal" style="display: none;">
+    <div class="modal-backdrop" onclick="closeServiceModal()"></div>
+    <div class="modal-dialog">
         <div class="modal-header">
-            <h3>Все заказы</h3>
-            <button class="modal-close" onclick="closeOrdersModal()">&times;</button>
+            <h3 id="serviceModalTitle">Добавить услугу</h3>
+            <button class="modal-close" onclick="closeServiceModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <div class="orders-table-container" id="ordersTableContainer">
-                <!-- Orders will be loaded here -->
-            </div>
+            <form id="serviceForm">
+                <input type="hidden" id="serviceId" name="id">
+                <label>Название услуги: <input type="text" id="serviceTitle" name="title" required></label>
+                <label>Описание: <textarea id="serviceDescription" name="description" rows="3"></textarea></label>
+                <label>Цена: <input type="number" id="servicePrice" name="price" step="0.01" required></label>
+                <label>Социальная сеть:
+                    <select id="serviceSocialNetwork" name="social_network">
+                        <option value="instagram">Instagram</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="telegram">Telegram</option>
+                    </select>
+                </label>
+                <label>Статус:
+                    <select id="serviceStatus" name="is_active">
+                        <option value="true">Активен</option>
+                        <option value="false">Неактивен</option>
+                    </select>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeServiceModal()">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Status Change Modal -->
-<div id="statusModal" class="modal" style="display: none;">
-    <div class="modal-backdrop" onclick="closeStatusModal()"></div>
+<!-- User Modal -->
+<div id="userModal" class="modal" style="display: none;">
+    <div class="modal-backdrop" onclick="closeUserModal()"></div>
     <div class="modal-dialog">
         <div class="modal-header">
-            <h3>Изменение статуса</h3>
-            <button class="modal-close" onclick="closeStatusModal()">&times;</button>
+            <h3 id="userModalTitle">Добавить пользователя</h3>
+            <button class="modal-close" onclick="closeUserModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <form id="statusChangeForm">
-                <input type="hidden" id="statusOrderId" name="order_id">
-                <label>Новый статус:
-                    <select id="newStatus" name="status" required>
-                        <option value="">Выберите статус</option>
-                        <option value="new">Новый</option>
-                        <option value="paid">Оплачен</option>
-                        <option value="in_progress">В работе</option>
-                        <option value="done">Выполнен</option>
-                        <option value="cancelled">Отменен</option>
+            <form id="userForm">
+                <input type="hidden" id="userId" name="id">
+                <label>Email: <input type="email" id="userEmail" name="email" required></label>
+                <label>Пароль: <input type="password" id="userPassword" name="password"></label>
+                <label>ФИО: <input type="text" id="userFullName" name="full_name"></label>
+                <label>Роль:
+                    <select id="userRole" name="role">
+                        <option value="user">Пользователь</option>
+                        <option value="admin">Администратор</option>
                     </select>
                 </label>
-                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <label>Статус:
+                    <select id="userStatus" name="is_active">
+                        <option value="true">Активен</option>
+                        <option value="false">Заблокирован</option>
+                    </select>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
             </form>
         </div>
     </div>
@@ -347,5 +418,44 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'shop/js/admin.js' %}?v=2"></script>
+
+<script>
+// Проверяем авторизацию при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('access');
+    if (token) {
+        // Отправляем токен в заголовке для middleware
+        fetch(window.location.href, {
+            method: 'GET',
+            headers: {
+                'X-Access-Token': token
+            }
+        }).then(response => {
+            if (response.ok) {
+                // Токен валиден, обновляем страницу
+                window.location.reload();
+            }
+        }).catch(error => {
+            console.error('Ошибка проверки токена:', error);
+        });
+    } else {
+        // Нет токена, перенаправляем на главную
+        window.location.href = '/';
+    }
+});
+
+// Global modal functions
+function closeServiceModal() {
+    if (window.adminDashboard) {
+        window.adminDashboard.closeServiceModal();
+    }
+}
+
+function closeUserModal() {
+    if (window.adminDashboard) {
+        window.adminDashboard.closeUserModal();
+    }
+}
+</script>
 </body>
 </html>

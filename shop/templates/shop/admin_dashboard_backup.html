@@ -1,0 +1,140 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>РђРґРјРёРЅ-РїР°РЅРµР»СЊ вЂ” SanderStu</title>
+    <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'shop/css/admin.css' %}">
+</head>
+<body>
+<main class="admin-dashboard">
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>РђРґРјРёРЅ-РїР°РЅРµР»СЊ</h2>
+            </div>
+            <nav class="admin-nav">
+                <ul>
+                    <li><a href="#dashboard" class="nav-item active" data-section="dashboard">
+                        <span class="nav-icon">рџ“Љ</span> Р“Р»Р°РІРЅР°СЏ
+                    </a></li>
+                    <li><a href="#services" class="nav-item" data-section="services">
+                        <span class="nav-icon">рџ›ЌпёЏ</span> РЈСЃР»СѓРіРё
+                    </a></li>
+                    <li><a href="#orders" class="nav-item" data-section="orders">
+                        <span class="nav-icon">рџ“‹</span> Р—Р°РєР°Р·С‹
+                    </a></li>
+                    <li><a href="#users" class="nav-item" data-section="users">
+                        <span class="nav-icon">рџ‘Ґ</span> РџРѕР»СЊР·РѕРІР°С‚РµР»Рё
+                    </a></li>
+                    <li><a href="#analytics" class="nav-item" data-section="analytics">
+                        <span class="nav-icon">рџ“€</span> РђРЅР°Р»РёС‚РёРєР°
+                    </a></li>
+                    <li><a href="#reports" class="nav-item" data-section="reports">
+                        <span class="nav-icon">рџ“„</span> РћС‚С‡РµС‚С‹
+                    </a></li>
+                    <li><a href="#settings" class="nav-item" data-section="settings">
+                        <span class="nav-icon">вљ™пёЏ</span> РќР°СЃС‚СЂРѕР№РєРё
+                    </a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="admin-main">
+            <!-- Header -->
+            <header class="admin-header">
+                <div class="admin-header-left">
+                    <h1 id="page-title">Р”Р°С€Р±РѕСЂРґ</h1>
+                    <p id="page-subtitle">РћР±Р·РѕСЂ СЃРёСЃС‚РµРјС‹ Рё РєР»СЋС‡РµРІС‹Рµ РїРѕРєР°Р·Р°С‚РµР»Рё</p>
+                </div>
+                <div class="admin-header-right">
+                    <div class="admin-user">
+                        <span class="user-name" id="adminUserName">РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ</span>
+                        <div class="user-menu">
+                            <button class="user-menu-btn">вљ™пёЏ</button>
+                            <div class="user-dropdown">
+                                <a href="#" id="logoutAdmin">Р’С‹Р№С‚Рё</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="admin-content" id="admin-content">
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon">рџ’°</div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" id="totalRevenue">0 в‚Ѕ</div>
+                            <div class="kpi-change positive">+12.5%</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">рџ“¦</div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" id="monthlyOrders">0</div>
+                            <div class="kpi-change positive">+8.2%</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">рџ‘Ґ</div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" id="activeUsers">0</div>
+                            <div class="kpi-change positive">+15.3%</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon">рџ“Љ</div>
+                        <div class="kpi-content">
+                            <div class="kpi-value" id="averageOrder">0 в‚Ѕ</div>
+                            <div class="kpi-change negative">-2.1%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="chart-container">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="servicesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="recent-section">
+                    <div class="section-actions">
+                        <a href="#orders" class="view-all">Р’СЃРµ Р·Р°РєР°Р·С‹ в†’</a>
+                    </div>
+                    <div class="recent-orders" id="recentOrders">
+                        <!-- Orders will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="notifications-section">
+                    <div class="section-actions">
+                        <span class="notification-count" id="notificationCount">0</span>
+                    </div>
+                    <div class="notifications" id="notifications">
+                        <!-- Notifications will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+           
+           
+
+    
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'shop/js/admin.js' %}?v=2"></script>
+</body>
+</html>
