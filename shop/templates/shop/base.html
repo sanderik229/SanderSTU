@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'shop/css/admin.css' %}">
 </head>
 <body>
     <header class="site-header">
@@ -22,9 +23,17 @@
                 <button id="globalSearchBtn" class="btn small">Поиск</button>
                 <div id="globalSearchResults" class="search-results" role="listbox" aria-label="Результаты поиска"></div>
             </div>
-            <div class="auth-actions">
+            <div class="auth-actions" id="authActions">
                 <button class="btn ghost" data-modal-open="login">Войти</button>
                 <button class="btn accent" data-modal-open="register">Зарегистрироваться</button>
+            </div>
+            <div class="auth-user" id="authUser" style="display:none; position:relative">
+                <button class="btn ghost" id="userNameBtn" aria-haspopup="true" aria-expanded="false"><span id="userNameDisplay"></span></button>
+                <div id="userMenu" class="dropdown" role="menu" style="display:none">
+                    <button class="dropdown-item" id="menuProfile">Профиль</button>
+                    <button class="dropdown-item" id="menuOrders">Заказы</button>
+                    <button class="dropdown-item danger" id="logoutBtn">Выйти</button>
+                </div>
             </div>
             <button id="burger" class="burger" aria-label="Меню">
                 <span></span><span></span><span></span>
@@ -40,6 +49,12 @@
         </div>
     </footer>
 
+    <!-- Toast notification -->
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Hidden CSRF bootstrap to ensure csrftoken cookie is set -->
+    <form style="display:none">{% csrf_token %}</form>
+
     <!-- Modals -->
     <div class="modal" id="modal-login" aria-hidden="true">
         <div class="modal-backdrop" data-modal-close></div>
@@ -50,6 +65,7 @@
                 <label>Email<input type="email" name="email" required></label>
                 <label>Пароль<input type="password" name="password" required></label>
                 <button class="btn accent" type="submit">Войти</button>
+                <p id="loginStatus" class="form-status" role="status"></p>
             </form>
         </div>
     </div>
@@ -60,14 +76,38 @@
             <button class="modal-close" data-modal-close>&times;</button>
             <h3>Зарегистрироваться</h3>
             <form id="registerForm" class="form">
+                <label>ФИО<input type="text" name="full_name" required></label>
+                <label>Год рождения<input type="number" name="birth_year" min="1900" max="2015" required></label>
                 <label>Email<input type="email" name="email" required></label>
-                <label>Пароль<input type="password" name="password" required></label>
+                <label>Пароль<input type="password" name="password" minlength="6" required></label>
                 <button class="btn accent" type="submit">Зарегистрироваться</button>
+                <p id="registerStatus" class="form-status" role="status"></p>
             </form>
         </div>
     </div>
 
-    <script src="{% static 'shop/js/main.js' %}"></script>
+    <!-- Purchase Order Modal -->
+    <div class="modal" id="modal-purchase" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-dialog">
+            <button class="modal-close" data-modal-close>&times;</button>
+            <h3>Оформить заказ</h3>
+            <form id="purchaseForm" class="form">
+                <input type="hidden" id="selectedOfferId" name="offer_id">
+                <div class="grid">
+                    <label>ФИО<input type="text" name="full_name" required></label>
+                    <label>Телефон<input type="tel" name="phone" pattern="\+7[0-9]{10}" placeholder="+7XXXXXXXXXX" maxlength="12" required></label>
+                </div>
+                <label>Email<input type="email" name="email" required></label>
+                <label>Описание рекламы<textarea name="description" rows="4" placeholder="Опишите, как должна выглядеть реклама, какие моменты подчеркнуть, целевая аудитория и т.д." required></textarea></label>
+                <div id="offerDetails" class="offer-details"></div>
+                <button class="btn accent" type="submit">Купить</button>
+                <p id="purchaseStatus" class="form-status" role="status"></p>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'shop/js/main.js' %}?v=17"></script>
 </body>
 </html>
 

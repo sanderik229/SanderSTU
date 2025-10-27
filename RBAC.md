@@ -66,6 +66,13 @@
 
 ### Иерархия ролей и привилегий
 ```mermaid
+
+
+
+
+
+
+
 graph TD
   A[Guest] --> B[Customer]
   B --> C[Advertiser]

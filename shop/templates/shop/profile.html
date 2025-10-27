@@ -1,0 +1,32 @@
+{% extends 'shop/base.html' %}
+{% block title %}Профиль — SanderStu{% endblock %}
+{% block content %}
+<main class="container page-profile">
+    <h1>Мой профиль</h1>
+    
+    <div class="profile-content">
+        <div class="profile-section">
+            <h2>Личная информация</h2>
+            <form id="profileForm" class="form">
+                <div class="grid">
+                    <label>ФИО<input type="text" name="full_name" id="profileFullName" required></label>
+                    <label>Email<input type="email" name="email" id="profileEmail" readonly></label>
+                </div>
+                <button class="btn accent" type="submit">Сохранить изменения</button>
+                <p id="profileStatus" class="form-status" role="status"></p>
+            </form>
+        </div>
+        
+        <div class="profile-section">
+            <h2>Мои заказы</h2>
+            <div id="profileOrdersList" class="orders-list"></div>
+            <a href="/my-orders/" class="btn ghost">Посмотреть все заказы</a>
+        </div>
+        
+        <div class="profile-section">
+            <h2>Действия</h2>
+            <button id="logoutProfileBtn" class="btn danger">Выйти из аккаунта</button>
+        </div>
+    </div>
+</main>
+{% endblock %}

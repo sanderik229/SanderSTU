@@ -20,6 +20,47 @@ html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,Segoe U
 .search-item:last-child{border-bottom:none}
 .search-item img{width:48px;height:48px;object-fit:cover;border-radius:8px}
 .auth-actions{display:flex;gap:8px}
+.auth-user{display:flex;gap:8px;align-items:center}
+.dropdown{position:absolute;right:0;top:48px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 24px rgba(15,23,42,.12);min-width:180px;overflow:hidden}
+.dropdown-item{display:block;width:100%;text-align:left;padding:10px 12px;background:#fff;border:none;cursor:pointer}
+.dropdown-item:hover{background:#f1f5f9}
+.dropdown-item.danger{color:#b91c1c}
+
+/* toast */
+.toast{position:fixed;left:16px;bottom:16px;min-width:260px;max-width:90vw;background:#0f172a;color:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 12px 28px rgba(15,23,42,.35);opacity:0;transform:translateY(20px);pointer-events:none;transition:opacity .25s ease, transform .25s ease}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{background:#16a34a}
+.toast.error{background:#b91c1c}
+.toast.info{background:#0f172a}
+
+/* Orders page */
+.orders-list{display:flex;flex-direction:column;gap:16px;margin-top:20px}
+.order-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;transition:.2s}
+.order-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(15,23,42,.06)}
+.order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.order-id{font-weight:600;color:var(--accent)}
+.order-status{padding:4px 8px;border-radius:6px;font-size:12px;font-weight:500}
+.order-status.new{background:#dbeafe;color:#1e40af}
+.order-status.paid{background:#dcfce7;color:#166534}
+.order-status.in_progress{background:#fef3c7;color:#92400e}
+.order-status.done{background:#d1fae5;color:#065f46}
+.order-status.cancelled{background:#fee2e2;color:#991b1b}
+.order-details{margin-top:12px;color:var(--muted)}
+.order-details p{margin:4px 0}
+/* Profile page */
+.page-profile{max-width:800px;margin:0 auto;padding:20px 0}
+.profile-content{display:flex;flex-direction:column;gap:32px}
+.profile-section{background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px}
+.profile-section h2{margin:0 0 20px 0;color:var(--accent);font-size:20px;font-weight:600}
+.profile-section .form{margin-bottom:0}
+.profile-section .btn{margin-top:16px}
+.orders-list{max-height:400px;overflow-y:auto;margin-bottom:16px}
+
+/* Purchase modal */
+.offer-details{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:12px;margin:12px 0}
+.offer-details h4{margin:0 0 8px 0;color:var(--accent)}
+.offer-details p{margin:4px 0;font-size:14px;color:var(--muted)}
+.offer-price{font-size:18px;font-weight:600;color:var(--accent);margin-top:8px}
 .burger{display:none;background:none;border:none;width:40px;height:40px;padding:0;margin-left:8px}
 .burger span{display:block;height:2px;background:var(--text);margin:7px 0}
 

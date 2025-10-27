@@ -5,12 +5,24 @@
     <h1>Заказать рекламу</h1>
     <form id="orderForm" class="form form-wide">
         <div class="grid">
-            <label>Имя<input type="text" name="name" required></label>
+            <label>ФИО<input type="text" name="full_name" required></label>
             <label>Email<input type="email" name="email" required></label>
-            <label>Телефон<input type="tel" name="phone" required></label>
+            <label>Телефон<input type="tel" name="phone" pattern="\+7[0-9]{10}" placeholder="+7XXXXXXXXXX" maxlength="12" required></label>
         </div>
-        <label>Описание запроса<textarea name="description" rows="6" required></textarea></label>
-        <button class="btn accent" type="submit">Отправить запрос</button>
+        <div class="grid">
+            <label>Тип рекламы
+                <select name="ad_type" required>
+                    <option value="">Выберите тип</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="telegram">Telegram</option>
+                    <option value="instagram_story">Instagram Stories</option>
+                    <option value="instagram_post">Instagram Post</option>
+                </select>
+            </label>
+            <label>Бюджет (руб.)<input type="number" name="budget" min="1000" step="1000" pattern="[0-9]+" required></label>
+        </div>
+        <label>Описание заказа<textarea name="description" rows="6" placeholder="Опишите, какая реклама должна быть, целевая аудитория, сроки и т.д." required></textarea></label>
+        <button class="btn accent" type="submit">Отправить заказ</button>
         <p id="orderStatus" class="form-status" role="status"></p>
     </form>
 {% endblock %}

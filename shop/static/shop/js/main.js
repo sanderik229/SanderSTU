@@ -1,11 +1,58 @@
+const storage = {
+  setTokens: (access, refresh) => { localStorage.setItem('access', access); localStorage.setItem('refresh', refresh||''); },
+  getAccess: () => localStorage.getItem('access'),
+  getRefresh: () => localStorage.getItem('refresh'),
+  clear: () => { localStorage.removeItem('access'); localStorage.removeItem('refresh'); localStorage.removeItem('userEmail'); localStorage.removeItem('userFullName'); },
+  setEmail: (email) => localStorage.setItem('userEmail', email),
+  getEmail: () => localStorage.getItem('userEmail'),
+  setFullName: (fullName) => localStorage.setItem('userFullName', fullName),
+  getFullName: () => localStorage.getItem('userFullName'),
+};
+
+function getCSRFToken(){
+  const name = 'csrftoken=';
+  const parts = document.cookie ? document.cookie.split(';') : [];
+  for(const part of parts){
+    const p = part.trim();
+    if(p.startsWith(name)) return decodeURIComponent(p.substring(name.length));
+  }
+  return '';
+}
+
+const authHeaders = () => {
+  const h = {'Content-Type':'application/json'};
+  const token = storage.getAccess();
+  if(token) h['Authorization'] = `Bearer ${token}`;
+  const csrf = getCSRFToken();
+  if(csrf) h['X-CSRFToken'] = csrf;
+  return h;
+};
+
 const api = {
   listAds: (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return fetch(`/api/ads/${query ? `?${query}` : ''}`).then(r => r.json());
   },
-  order: (payload) => fetch('/api/order/', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).then(r=>r.json()),
-  login: (payload) => fetch('/api/auth/login/', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).then(r=>r.json()),
-  register: (payload) => fetch('/api/auth/register/', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}).then(r=>r.json()),
+  // v2 APIs
+  listOffers: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return fetch(`/api/v2/offers/${query ? `?${query}` : ''}`).then(r => r.json());
+  },
+  listBloggers: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return fetch(`/api/v2/bloggers/${query ? `?${query}` : ''}`).then(r => r.json());
+  },
+  order: (payload) => fetch('/api/order/', {method:'POST', headers:authHeaders(), credentials:'same-origin', body:JSON.stringify(payload)}).then(r=>r.json()),
+  // v2 auth
+  login: (payload) => fetch('/api/v2/auth/login/', {method:'POST', headers:authHeaders(), credentials:'same-origin', body:JSON.stringify(payload)}).then(r=>r.json()),
+  register: (payload) => fetch('/api/v2/auth/register/', {method:'POST', headers:authHeaders(), credentials:'same-origin', body:JSON.stringify(payload)}).then(r=>r.json()),
+  me: () => fetch('/api/v2/me/', {headers:authHeaders()}).then(r=>r.ok?r.json():null),
+  // Refresh token
+  refreshToken: () => {
+    const refresh = storage.getRefresh();
+    if(!refresh) return Promise.reject('No refresh token');
+    return fetch('/api/v2/auth/refresh/', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({refresh})}).then(r=>r.json());
+  },
 };
 
 function $(sel, root=document){return root.querySelector(sel)}
@@ -19,12 +66,29 @@ function navigate(where){
 
 function cardTemplate(ad){
   return `<div class="card" data-id="${ad.id}">
-    <img src="${ad.image}" alt="${ad.title}">
+    <img src="${ad.image || '/static/shop/img/banner_main.svg'}" alt="${ad.title}">
     <h3>${ad.title}</h3>
     <p>${ad.description}</p>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
       <strong>${ad.price.toLocaleString('ru-RU')} ₽</strong>
       <a class="btn small" href="/order/">Заказать</a>
+    </div>
+  </div>`
+}
+
+function offerCardTemplate(offer){
+  console.log('Creating card for offer:', offer);
+  return `<div class="card" data-id="${offer.id}">
+    <div style="height:160px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:18px">
+      ${offer.blogger.social_network.toUpperCase()}
+    </div>
+    <h3>${offer.title}</h3>
+    <p><strong>Блогер:</strong> ${offer.blogger.name}</p>
+    <p><strong>Тематика:</strong> ${offer.blogger.topic}</p>
+    <p><strong>Аудитория:</strong> ${offer.blogger.audience_size.toLocaleString('ru-RU')} подписчиков</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+      <strong>${offer.price.toLocaleString('ru-RU')} ₽</strong>
+      <button class="btn small" onclick="openPurchaseModal(${offer.id})">Заказать</button>
     </div>
   </div>`
 }
@@ -56,17 +120,41 @@ function setupGlobalSearch(){
 }
 
 function setupBuyPage(){
+  console.log('Setting up buy page...');
   const results = $('#buyResults');
-  if(!results) return;
-  const search=$('#buySearch'), cat=$('#buyCategory'), sort=$('#buySort'), apply=$('#buyApply');
-  function load(){
-    const params = {};
-    if(search.value.trim()) params.q=search.value.trim();
-    if(cat.value) params.category=cat.value;
-    if(sort.value) params.sort=sort.value;
-    api.listAds(params).then(({results:ads})=>{ results.innerHTML = ads.map(cardTemplate).join(''); });
+  if(!results) {
+    console.log('buyResults element not found');
+    return;
   }
-  apply.addEventListener('click', load);
+  console.log('Found buyResults element');
+  
+  const search=$('#buySearch'), social=$('#buySocial'), sort=$('#buySort'), apply=$('#buyApply');
+  function load(){
+    console.log('Loading offers...');
+    const params = {};
+    if(search.value.trim()) params.search=search.value.trim();
+    if(social.value) params.social_network=social.value;
+    if(sort.value) params.ordering=sort.value;
+    
+    api.listOffers(params).then((data)=>{
+      console.log('Offers loaded:', data);
+      const offers = data.results || data;
+      results.innerHTML = offers.map(offerCardTemplate).join('');
+      console.log('Offers rendered, total:', offers.length);
+    }).catch((error)=>{
+      console.error('Error loading offers:', error);
+      // Fallback to old API
+      api.listAds({sort:'popularity'}).then(({results:ads})=>{ 
+        results.innerHTML = ads.map(cardTemplate).join(''); 
+      });
+    });
+  }
+  
+  if(apply) {
+    apply.addEventListener('click', load);
+    console.log('Apply button listener added');
+  }
+  
   load();
 }
 
@@ -74,12 +162,105 @@ function setupOrderForm(){
   const form = $('#orderForm');
   if(!form) return;
   const status = $('#orderStatus');
-  form.addEventListener('submit', (e)=>{
+  
+  // Auto-fill user data if logged in
+  const userEmail = storage.getEmail();
+  const userFullName = storage.getFullName();
+  
+  if (userEmail) {
+    const emailInput = document.querySelector('input[name="email"]');
+    if (emailInput) emailInput.value = userEmail;
+  }
+  
+  if (userFullName) {
+    const fullNameInput = document.querySelector('input[name="full_name"]');
+    if (fullNameInput) fullNameInput.value = userFullName;
+  }
+  
+  // Phone validation
+  const phoneInput = document.querySelector('input[name="phone"]');
+  if (phoneInput) {
+    phoneInput.addEventListener('input', function(e) {
+      // Remove all non-digits
+      let value = e.target.value.replace(/\D/g, '');
+      
+      // Limit to 11 digits maximum
+      if (value.length > 11) {
+        value = value.substring(0, 11);
+      }
+      
+      // Add +7 prefix if it starts with 7 or 8
+      if (value.startsWith('7') || value.startsWith('8')) {
+        value = '+7' + value.substring(1);
+      } else if (!value.startsWith('+7') && value.length > 0) {
+        value = '+7' + value;
+      }
+      
+      e.target.value = value;
+    });
+  }
+  
+  // Budget validation
+  const budgetInput = document.querySelector('input[name="budget"]');
+  if (budgetInput) {
+    budgetInput.addEventListener('input', function(e) {
+      // Remove all non-digits
+      e.target.value = e.target.value.replace(/\D/g, '');
+    });
+  }
+  
+  form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form).entries());
     status.textContent = 'Отправка...';
-    api.order(data).then(()=>{ status.textContent='Запрос отправлен! Менеджер свяжется с вами.'; form.reset(); })
-      .catch(()=>{ status.textContent='Ошибка отправки. Попробуйте позже.'; });
+    
+    // Create order data for v2 API
+    const orderData = {
+      full_name: data.full_name,
+      email: data.email,
+      phone: data.phone,
+      ad_type: data.ad_type,
+      budget: parseInt(data.budget),
+      description: data.description,
+      order_type: 'personal' // Mark as personal order
+    };
+    
+    try {
+      // Try to send order
+      let response = await fetch('/api/v2/orders/', {method:'POST', headers:authHeaders(), credentials:'same-origin', body:JSON.stringify(orderData)});
+      
+      // If token expired, try to refresh
+      if(response.status === 401) {
+        try {
+          const refreshResponse = await api.refreshToken();
+          if(refreshResponse.access) {
+            storage.setTokens(refreshResponse.access, refreshResponse.refresh);
+            // Retry with new token
+            response = await fetch('/api/v2/orders/', {method:'POST', headers:authHeaders(), credentials:'same-origin', body:JSON.stringify(orderData)});
+          }
+        } catch(refreshError) {
+          console.error('Token refresh failed:', refreshError);
+          // If refresh fails, try without auth (for personal orders)
+          response = await fetch('/api/v2/orders/', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify(orderData)});
+        }
+      }
+      
+      if(response.ok) {
+        const result = await response.json();
+        console.log('Order created:', result);
+        showToast('Заказ успешно отправлен! Ожидайте, пока кто-то его примет.', 'success');
+        setTimeout(() => {
+          window.location.assign('/my-orders/');
+        }, 2000);
+      } else {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Error');
+      }
+    } catch(error) {
+      console.error('Order error:', error);
+      status.textContent='Ошибка отправки. Попробуйте позже.'; 
+      showToast('Ошибка отправки заказа: ' + error.message, 'error');
+    }
   });
 }
 
@@ -93,22 +274,459 @@ function setupAuthModals(){
   $all('.modal-backdrop').forEach(b=> b.addEventListener('click', hideAll));
 
   const loginForm = $('#loginForm');
-  if(loginForm){ loginForm.addEventListener('submit',(e)=>{ e.preventDefault(); const data=Object.fromEntries(new FormData(loginForm).entries()); api.login(data).then(()=>{ hideAll(); alert('Вход выполнен'); }); }); }
+  const loginStatus = $('#loginStatus');
+  if(loginForm){ loginForm.addEventListener('submit', async (e)=>{ e.preventDefault(); const data=Object.fromEntries(new FormData(loginForm).entries());
+      const res = await api.login({username:data.email, password:data.password});
+      if(res && res.access){
+        storage.setTokens(res.access, res.refresh);
+        showToast('Вход выполнен', 'success');
+        await postLoginFlow();
+        hideAll();
+      } else { showToast('Ошибка входа', 'error'); }
+    }); }
   const registerForm = $('#registerForm');
-  if(registerForm){ registerForm.addEventListener('submit',(e)=>{ e.preventDefault(); const data=Object.fromEntries(new FormData(registerForm).entries()); api.register(data).then(()=>{ hideAll(); alert('Регистрация выполнена'); }); }); }
+  const registerStatus = $('#registerStatus');
+  if(registerForm){ registerForm.addEventListener('submit', async (e)=>{ e.preventDefault(); const data=Object.fromEntries(new FormData(registerForm).entries());
+      // our register takes email,password,full_name,birth_year (birth_year optional here)
+      registerStatus.textContent = 'Отправка...';
+      const payload = { email: data.email, password: data.password, full_name: data.full_name, birth_year: data.birth_year ? Number(data.birth_year) : null };
+      const res = await api.register(payload);
+      if(res && res.access){
+        storage.setTokens(res.access, res.refresh||'');
+        storage.setEmail(res.user && res.user.email ? res.user.email : data.email);
+        showToast('Регистрация успешна', 'success');
+        await postLoginFlow();
+        hideAll();
+      } else if(res && res.detail){ showToast(res.detail, 'error'); }
+      else { showToast('Ошибка регистрации', 'error'); }
+    }); }
+}
+
+function showModal(id){ const m=$(`#modal-${id}`); if(m){ m.setAttribute('aria-hidden','false'); }}
+
+function updateAuthUI(){
+  const access = storage.getAccess();
+  const authActions = $('#authActions');
+  const authUser = $('#authUser');
+  const nameSpan = $('#userNameDisplay');
+  if(access){
+    authActions.style.display='none';
+    authUser.style.display='flex';
+    nameSpan.textContent = storage.getEmail() || '';
+  } else {
+    authActions.style.display='flex';
+    authUser.style.display='none';
+    if(nameSpan) nameSpan.textContent = '';
+  }
+}
+
+async function postLoginFlow(){
+  // Fetch user profile to determine role and email
+  try{
+    const me = await api.me();
+    if(me){
+      const fullName = me.profile && me.profile.full_name ? me.profile.full_name : (me.email || me.username || '');
+      storage.setEmail(fullName);
+      updateAuthUI();
+      const role = me.profile && me.profile.role ? me.profile.role : 'user';
+      if(role === 'admin'){
+        window.location.assign('/admin-panel/');
+      } else {
+        // user dashboard could be added; for now, stay on home
+        // window.location.assign('/');
+      }
+    } else {
+      updateAuthUI();
+    }
+  } catch(e){ updateAuthUI(); }
+}
+
+function showToast(message, type='info'){
+  const el = document.getElementById('toast');
+  if(!el) return;
+  el.className = `toast ${type}`;
+  el.textContent = message;
+  requestAnimationFrame(()=>{
+    el.classList.add('show');
+    setTimeout(()=>{ el.classList.remove('show'); }, 2200);
+  });
 }
 
 function setupNav(){
   $all('[data-nav]').forEach(btn=> btn.addEventListener('click', ()=> navigate(btn.dataset.nav)));
 }
 
+function setupProfilePage(){
+  const profileForm = $('#profileForm');
+  const profileStatus = $('#profileStatus');
+  const profileFullName = $('#profileFullName');
+  const profileEmail = $('#profileEmail');
+  const profileOrdersList = $('#profileOrdersList');
+  const logoutProfileBtn = $('#logoutProfileBtn');
+  
+  if(!profileForm) return;
+  
+  // Load user profile data
+  async function loadProfile(){
+    try {
+      const response = await fetch('/api/v2/me/', {headers:authHeaders()});
+      if(response.ok) {
+        const userData = await response.json();
+        console.log('Profile loaded:', userData);
+        
+        if(profileFullName) {
+          profileFullName.value = userData.profile?.full_name || userData.full_name || '';
+        }
+        if(profileEmail) {
+          profileEmail.value = userData.email || userData.username || '';
+        }
+      } else {
+        console.error('Failed to load profile');
+      }
+    } catch(error) {
+      console.error('Error loading profile:', error);
+    }
+  }
+  
+  // Load recent orders
+  async function loadRecentOrders(){
+    try {
+      const response = await fetch('/api/v2/orders/', {headers:authHeaders()});
+      if(response.ok) {
+        const data = await response.json();
+        const orders = data.results || data;
+        const recentOrders = orders.slice(0, 3); // Show only last 3 orders
+        
+        if(profileOrdersList) {
+          if(recentOrders.length === 0) {
+            profileOrdersList.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">У вас пока нет заказов</p>';
+          } else {
+            profileOrdersList.innerHTML = recentOrders.map(orderTemplate).join('');
+          }
+        }
+      }
+    } catch(error) {
+      console.error('Error loading recent orders:', error);
+      if(profileOrdersList) {
+        profileOrdersList.innerHTML = '<p style="text-align:center;color:var(--muted);padding:20px">Ошибка загрузки заказов</p>';
+      }
+    }
+  }
+  
+  // Handle profile form submission
+  if(profileForm) {
+    profileForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fullName = profileFullName.value.trim();
+      
+      if(!fullName) {
+        profileStatus.textContent = 'ФИО не может быть пустым';
+        return;
+      }
+      
+      profileStatus.textContent = 'Сохранение...';
+      
+      try {
+        console.log('Sending profile update request to /api/v2/me/update_profile/');
+        console.log('Full name:', fullName);
+        console.log('Auth headers:', authHeaders());
+        
+        const response = await fetch('/api/v2/me/update_profile/', {
+          method: 'POST',
+          headers: authHeaders(),
+          credentials: 'same-origin',
+          body: JSON.stringify({full_name: fullName})
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        if(response.ok) {
+          // Update localStorage
+          storage.setFullName(fullName);
+          profileStatus.textContent = 'Профиль успешно обновлен';
+          showToast('Профиль обновлен', 'success');
+          
+          // Update header
+          updateAuthUI();
+        } else {
+          const errorData = await response.json();
+          profileStatus.textContent = 'Ошибка сохранения: ' + (errorData.detail || 'Неизвестная ошибка');
+          showToast('Ошибка сохранения профиля', 'error');
+        }
+      } catch(error) {
+        console.error('Profile update error:', error);
+        profileStatus.textContent = 'Ошибка сохранения';
+        showToast('Ошибка сохранения профиля', 'error');
+      }
+    });
+  }
+  
+  // Handle logout
+  if(logoutProfileBtn) {
+    logoutProfileBtn.addEventListener('click', ()=>{
+      storage.clear();
+      updateAuthUI();
+      showToast('Вы вышли из аккаунта', 'info');
+      window.location.assign('/');
+    });
+  }
+  
+  // Load data
+  loadProfile();
+  loadRecentOrders();
+}
+
+function setupMyOrdersPage(){
+  const ordersList = $('#ordersList');
+  if(!ordersList) return;
+  
+  async function loadOrders(){
+    console.log('Loading orders...');
+    try {
+      let response = await fetch('/api/v2/orders/', {headers:authHeaders()});
+      console.log('Orders response status:', response.status);
+      
+      // If token expired, try to refresh
+      if(response.status === 401) {
+        try {
+          const refreshResponse = await api.refreshToken();
+          if(refreshResponse.access) {
+            storage.setTokens(refreshResponse.access, refreshResponse.refresh);
+            response = await fetch('/api/v2/orders/', {headers:authHeaders()});
+          }
+        } catch(refreshError) {
+          console.error('Token refresh failed:', refreshError);
+          // If refresh fails, try without auth
+          response = await fetch('/api/v2/orders/', {headers:{'Content-Type':'application/json'}});
+        }
+      }
+      
+      if(!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Orders loaded:', data);
+      const orders = data.results || data;
+      if(orders.length === 0){
+        ordersList.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px">У вас пока нет заказов</p>';
+        return;
+      }
+      ordersList.innerHTML = orders.map(orderTemplate).join('');
+    } catch(error) {
+      console.error('Error loading orders:', error);
+      ordersList.innerHTML = '<p style="text-align:center;color:var(--muted);padding:40px">Ошибка загрузки заказов: ' + error.message + '</p>';
+    }
+  }
+  
+  loadOrders();
+}
+
+// Purchase modal functions - make it global
+window.openPurchaseModal = function(offerId) {
+  console.log('Opening purchase modal for offer:', offerId);
+  const modal = $('#modal-purchase');
+  const offerDetails = $('#offerDetails');
+  const selectedOfferId = $('#selectedOfferId');
+  
+  if (!modal || !offerDetails || !selectedOfferId) {
+    console.error('Modal elements not found:', {modal, offerDetails, selectedOfferId});
+    return;
+  }
+  
+  // Store offer ID
+  selectedOfferId.value = offerId;
+  
+  // Find offer data from current offers
+  const offerCard = document.querySelector(`[data-id="${offerId}"]`);
+  if (offerCard) {
+    const title = offerCard.querySelector('h3').textContent;
+    const blogger = offerCard.querySelector('p').textContent.replace('Блогер: ', '');
+    const topic = offerCard.querySelectorAll('p')[1].textContent.replace('Тематика: ', '');
+    const audience = offerCard.querySelectorAll('p')[2].textContent.replace('Аудитория: ', '');
+    const price = offerCard.querySelector('strong').textContent;
+    
+    offerDetails.innerHTML = `
+      <h4>${title}</h4>
+      <p><strong>Блогер:</strong> ${blogger}</p>
+      <p><strong>Тематика:</strong> ${topic}</p>
+      <p><strong>Аудитория:</strong> ${audience}</p>
+      <div class="offer-price">Цена: ${price}</div>
+    `;
+  }
+  
+  // Auto-fill user data if logged in
+  const userEmail = storage.getEmail();
+  const userFullName = storage.getFullName();
+  
+  if (userEmail) {
+    const emailInput = modal.querySelector('input[name="email"]');
+    if (emailInput) emailInput.value = userEmail;
+  }
+  
+  if (userFullName) {
+    const fullNameInput = modal.querySelector('input[name="full_name"]');
+    if (fullNameInput) fullNameInput.value = userFullName;
+  }
+  
+  // Show modal
+  modal.setAttribute('aria-hidden', 'false');
+  console.log('Modal should be visible now');
+};
+
+function setupPurchaseForm(){
+  const form = $('#purchaseForm');
+  if(!form) return;
+  const status = $('#purchaseStatus');
+  
+  // Phone validation for purchase form
+  const phoneInput = form.querySelector('input[name="phone"]');
+  if (phoneInput) {
+    phoneInput.addEventListener('input', function(e) {
+      // Remove all non-digits
+      let value = e.target.value.replace(/\D/g, '');
+      
+      // Limit to 11 digits maximum
+      if (value.length > 11) {
+        value = value.substring(0, 11);
+      }
+      
+      // Add +7 prefix if it starts with 7 or 8
+      if (value.startsWith('7') || value.startsWith('8')) {
+        value = '+7' + value.substring(1);
+      } else if (!value.startsWith('+7') && value.length > 0) {
+        value = '+7' + value;
+      }
+      
+      e.target.value = value;
+    });
+  }
+  
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+    const offerId = $('#selectedOfferId').value;
+    
+    status.textContent = 'Отправка...';
+    
+    // Create order data
+    const orderData = {
+      offer_id: parseInt(offerId),
+      full_name: data.full_name,
+      email: data.email,
+      phone: data.phone,
+      description: data.description,
+      order_type: 'offer'
+    };
+    
+    try {
+      // Try to send order
+      let response = await fetch('/api/v2/orders/', {method:'POST', headers:authHeaders(), credentials:'same-origin', body:JSON.stringify(orderData)});
+      
+      // If token expired, try to refresh
+      if(response.status === 401) {
+        try {
+          const refreshResponse = await api.refreshToken();
+          if(refreshResponse.access) {
+            storage.setTokens(refreshResponse.access, refreshResponse.refresh);
+            response = await fetch('/api/v2/orders/', {method:'POST', headers:authHeaders(), credentials:'same-origin', body:JSON.stringify(orderData)});
+          }
+        } catch(refreshError) {
+          console.error('Token refresh failed:', refreshError);
+          response = await fetch('/api/v2/orders/', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body:JSON.stringify(orderData)});
+        }
+      }
+      
+      if(response.ok) {
+        const result = await response.json();
+        console.log('Purchase order created:', result);
+        showToast('Заказ успешно оформлен! Ожидайте подтверждения от блогера.', 'success');
+        
+        // Close modal
+        $('#modal-purchase').setAttribute('aria-hidden', 'true');
+        form.reset();
+        
+        setTimeout(() => {
+          window.location.assign('/my-orders/');
+        }, 2000);
+      } else {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Error');
+      }
+    } catch(error) {
+      console.error('Purchase order error:', error);
+      status.textContent='Ошибка отправки. Попробуйте позже.'; 
+      showToast('Ошибка оформления заказа: ' + error.message, 'error');
+    }
+  });
+}
+
+function orderTemplate(order){
+  const statusMap = {
+    'new': {text: 'Новый', class: 'new'},
+    'paid': {text: 'Оплачен', class: 'paid'},
+    'in_progress': {text: 'В работе', class: 'in_progress'},
+    'done': {text: 'Выполнен', class: 'done'},
+    'cancelled': {text: 'Отменен', class: 'cancelled'}
+  };
+  const status = statusMap[order.status] || {text: order.status, class: 'new'};
+  const createdDate = new Date(order.created_at).toLocaleDateString('ru-RU');
+  
+  // Get offer info if available
+  const offerInfo = order.offer && order.offer.blogger ? `
+    <p><strong>Предложение:</strong> ${order.offer.title}</p>
+    <p><strong>Блогер:</strong> ${order.offer.blogger.name}</p>
+    <p><strong>Цена:</strong> ${order.offer.price.toLocaleString('ru-RU')} ₽</p>
+  ` : '';
+  
+  return `
+    <div class="order-card">
+      <div class="order-header">
+        <span class="order-id">Заказ #${order.id}</span>
+        <span class="order-status ${status.class}">${status.text}</span>
+      </div>
+      <div class="order-details">
+        <p><strong>ФИО:</strong> ${order.full_name || 'Не указано'}</p>
+        <p><strong>Email:</strong> ${order.email || 'Не указано'}</p>
+        <p><strong>Телефон:</strong> ${order.phone || 'Не указано'}</p>
+        ${offerInfo}
+        <p><strong>Описание:</strong> ${order.description || 'Не указано'}</p>
+        <p><strong>Дата создания:</strong> ${createdDate}</p>
+        ${order.order_type === 'personal' ? '<span class="order-type">Персональный заказ</span>' : '<span class="order-type">Заказ по предложению</span>'}
+      </div>
+    </div>
+  `;
+}
+
+console.log('Main.js loaded successfully');
+
 document.addEventListener('DOMContentLoaded', ()=>{
+  console.log('DOM loaded, starting setup...');
   renderSampleAds();
   setupGlobalSearch();
   setupBuyPage();
   setupOrderForm();
   setupAuthModals();
+  setupPurchaseForm();
   setupNav();
+  setupMyOrdersPage();
+  setupProfilePage();
+  updateAuthUI();
+  const logoutBtn = $('#logoutBtn');
+  if(logoutBtn){ logoutBtn.addEventListener('click', ()=>{ storage.clear(); updateAuthUI(); }); }
+  // Dropdown menu handlers
+  const userNameBtn = $('#userNameBtn');
+  const userMenu = $('#userMenu');
+  const menuProfile = $('#menuProfile');
+  const menuOrders = $('#menuOrders');
+  if(userNameBtn && userMenu){
+    userNameBtn.addEventListener('click', (e)=>{ e.stopPropagation(); const open = userMenu.style.display==='block'; userMenu.style.display = open ? 'none' : 'block'; userNameBtn.setAttribute('aria-expanded', (!open).toString()); });
+    document.addEventListener('click', ()=>{ userMenu.style.display='none'; userNameBtn.setAttribute('aria-expanded','false'); });
+  }
+  if(menuProfile){ menuProfile.addEventListener('click', ()=>{ userMenu.style.display='none'; window.location.assign('/profile/'); }); }
+  if(menuOrders){ menuOrders.addEventListener('click', ()=>{ userMenu.style.display='none'; window.location.assign('/my-orders/'); }); }
+  console.log('All setup functions completed');
 });
 
 

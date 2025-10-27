@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Buy Page</title>
+</head>
+<body>
+    <h1>Test Buy Page</h1>
+    <div id="buyResults" class="cards"></div>
+    <div id="buySearch"></div>
+    <div id="buySocial"></div>
+    <div id="buySort"></div>
+    <div id="buyApply"></div>
+    
+    <script>
+        console.log('Test script loaded');
+        
+        // Test the API call
+        fetch('/api/v2/offers/')
+            .then(r => r.json())
+            .then(data => {
+                console.log('API response:', data);
+                const results = document.getElementById('buyResults');
+                if (results) {
+                    results.innerHTML = '<p>API works! Found ' + data.count + ' offers</p>';
+                }
+            })
+            .catch(error => {
+                console.error('API error:', error);
+            });
+    </script>
+</body>
+</html>
