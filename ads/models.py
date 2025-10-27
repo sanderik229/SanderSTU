@@ -19,14 +19,22 @@ class Order(models.Model):
         ("done", "Done"),
         ("cancelled", "Cancelled"),
     )
+    PAYMENT_STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("paid", "Paid"),
+        ("failed", "Failed"),
+    )
     ORDER_TYPE_CHOICES = (
         ("offer", "Offer"),
         ("personal", "Personal"),
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders", null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ads_orders", null=True, blank=True)
     offer = models.ForeignKey(AdOffer, on_delete=models.PROTECT, related_name="orders", null=True, blank=True)
     order_type = models.CharField(max_length=20, choices=ORDER_TYPE_CHOICES, default="personal")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending")
+    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    payment_date = models.DateTimeField(null=True, blank=True)
     performance = models.JSONField(default=dict, blank=True)  # эффективность: показы, переходы, ctr
     created_at = models.DateTimeField(auto_now_add=True)
     

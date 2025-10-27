@@ -1,0 +1,912 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты поиска — SanderStu</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'shop/css/styles.css' %}">
+    <style>
+        .search-page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 40px;
+        }
+        .search-page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .search-form-large {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+        .search-form-large .search-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .search-form-large input {
+            flex: 1;
+            height: 50px;
+            border: none;
+            border-radius: 12px;
+            padding: 0 20px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+        }
+        .search-form-large .btn {
+            height: 50px;
+            padding: 0 24px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+        }
+        .search-form-large .btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .search-stats {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            margin-top: 15px;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid #e5e7eb;
+        }
+        .result-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        .result-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+        .result-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .result-card p {
+            color: #6b7280;
+            margin: 0 0 16px 0;
+            line-height: 1.5;
+        }
+        .result-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .result-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+        .result-category {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .result-card-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        .result-card-actions .btn {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 12px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .result-card-actions .btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        .no-results h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #374151;
+        }
+        .no-results p {
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e5e7eb;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .filters-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+        .filters-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+        }
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        .modal-close:hover {
+            background: #f3f4f6;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        .btn-primary:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        /* Auth modal styles */
+        .modal-dialog {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+        .modal-dialog h3 {
+            margin: 0 0 24px 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+        }
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .form label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-weight: 600;
+            color: #374151;
+        }
+        .form input {
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+        }
+        .form input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .form .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .form .btn:hover {
+            background: #2563eb;
+        }
+        #loginStatus, #registerStatus {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+        #loginStatus.success, #registerStatus.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        #loginStatus.error, #registerStatus.error {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <a class="logo" href="/">Sander<span>Stu</span></a>
+            <nav class="main-nav">
+                <button class="btn ghost" data-nav="buy">Купить рекламу</button>
+                <button class="btn" data-nav="order">Заказать рекламу</button>
+            </nav>
+            <div class="search-wrap">
+                <input id="globalSearchInput" type="text" placeholder="Поиск по рекламе..." aria-label="Поиск">
+                <button id="globalSearchBtn" class="btn small">Поиск</button>
+                <div id="globalSearchResults" class="search-results" role="listbox" aria-label="Результаты поиска"></div>
+            </div>
+            <div class="auth-actions" id="authActions">
+                <button class="btn ghost" data-modal-open="login">Войти</button>
+                <button class="btn accent" data-modal-open="register">Зарегистрироваться</button>
+            </div>
+            <div class="auth-user" id="authUser" style="display:none; position:relative">
+                <button class="btn ghost" id="userNameBtn">Пользователь</button>
+                <div class="dropdown" id="userMenu" style="display:none">
+                    <button class="dropdown-item" id="menuProfile">Профиль</button>
+                    <button class="dropdown-item" id="menuOrders">Мои заказы</button>
+                    <button class="dropdown-item danger" id="logoutBtn">Выйти</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-page-header">
+        <div class="search-page-container">
+            <h1>Результаты поиска</h1>
+            <div class="search-form-large">
+                <div class="search-input-group">
+                    <input type="text" id="mainSearchInput" placeholder="Введите запрос для поиска..." value="{{ query|default:'' }}">
+                    <button class="btn" id="mainSearchBtn">Найти</button>
+                </div>
+                <div class="search-stats" id="searchStats">
+                    {% if query %}
+                        Поиск по запросу: "{{ query }}"
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-page-container">
+        <div class="filters-section">
+            <h3 style="margin: 0 0 16px 0;">Фильтры</h3>
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label>Категория</label>
+                    <select id="categoryFilter">
+                        <option value="">Все категории</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Цена от</label>
+                    <input type="number" id="minPriceFilter" placeholder="0">
+                </div>
+                <div class="filter-group">
+                    <label>Цена до</label>
+                    <input type="number" id="maxPriceFilter" placeholder="100000">
+                </div>
+                <div class="filter-group">
+                    <label>Сортировка</label>
+                    <select id="sortFilter">
+                        <option value="">По умолчанию</option>
+                        <option value="price">По цене</option>
+                        <option value="-price">По цене (убывание)</option>
+                        <option value="popularity">По популярности</option>
+                        <option value="-popularity">По популярности (убывание)</option>
+                    </select>
+                </div>
+                <button class="btn" id="applyFiltersBtn">Применить</button>
+            </div>
+        </div>
+
+        <div id="searchResults">
+            <div class="loading">Загрузка результатов...</div>
+        </div>
+    </div>
+
+    <!-- Order Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="orderModalTitle">Оформление заказа</h2>
+                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            </div>
+            <form id="orderForm">
+                <input type="hidden" id="orderAdId" name="ad_id">
+                
+                <div class="form-group">
+                    <label for="orderService">Услуга</label>
+                    <input type="text" id="orderService" name="service" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="orderPrice">Цена</label>
+                    <input type="text" id="orderPrice" name="price" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerName">Ваше имя *</label>
+                    <input type="text" id="customerName" name="customer_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerEmail">Email *</label>
+                    <input type="email" id="customerEmail" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customerPhone">Телефон *</label>
+                    <input type="tel" id="customerPhone" name="phone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="orderDescription">Описание заказа</label>
+                    <textarea id="orderDescription" name="description" placeholder="Опишите детали вашего заказа..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="orderBudget">Бюджет</label>
+                    <input type="number" id="orderBudget" name="budget" placeholder="Укажите ваш бюджет">
+                </div>
+                
+                <div class="form-group">
+                    <label for="orderDeadline">Желаемые сроки</label>
+                    <select id="orderDeadline" name="deadline">
+                        <option value="">Выберите сроки</option>
+                        <option value="asap">Как можно скорее</option>
+                        <option value="week">В течение недели</option>
+                        <option value="month">В течение месяца</option>
+                        <option value="flexible">Гибкие сроки</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeOrderModal()">Отмена</button>
+                    <button type="submit" class="btn-primary" id="submitOrderBtn">Отправить заказ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Auth Required Modal -->
+    <div id="authRequiredModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Требуется авторизация</h2>
+                <button class="modal-close" onclick="closeAuthRequiredModal()">&times;</button>
+            </div>
+            <div style="text-align: center; padding: 20px 0;">
+                <div style="font-size: 48px; margin-bottom: 20px;">🔒</div>
+                <h3 style="color: #374151; margin-bottom: 16px;">Для оформления заказа необходимо войти в аккаунт</h3>
+                <p style="color: #6b7280; margin-bottom: 24px;">
+                    Вы хотите заказать услугу <strong id="authRequiredService"></strong> 
+                    стоимостью <strong id="authRequiredPrice"></strong>
+                </p>
+                <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="openLoginModal()">
+                        Войти в аккаунт
+                    </button>
+                </div>
+                <p style="color: #9ca3af; font-size: 14px;">
+                    Нет аккаунта? <a href="#" onclick="openRegisterModal()" style="color: #3b82f6; text-decoration: none;">Зарегистрируйтесь</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal" id="modal-login" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-dialog">
+            <button class="modal-close" data-modal-close>&times;</button>
+            <h3>Войти</h3>
+            <form id="loginForm" class="form">
+                <label>Email: <input type="email" name="email" required></label>
+                <label>Пароль: <input type="password" name="password" required></label>
+                <button type="submit" class="btn">Войти</button>
+            </form>
+            <div id="loginStatus"></div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="modal-register" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-dialog">
+            <button class="modal-close" data-modal-close>&times;</button>
+            <h3>Зарегистрироваться</h3>
+            <form id="registerForm" class="form">
+                <label>Email: <input type="email" name="email" required></label>
+                <label>Пароль: <input type="password" name="password" required></label>
+                <label>Подтвердите пароль: <input type="password" name="password_confirm" required></label>
+                <button type="submit" class="btn">Зарегистрироваться</button>
+            </form>
+            <div id="registerStatus"></div>
+        </div>
+    </div>
+
+    <script src="{% static 'shop/js/main.js' %}"></script>
+    <script>
+        // Инициализация страницы поиска
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализируем систему авторизации
+            if (typeof setupAuthModals === 'function') {
+                setupAuthModals();
+            }
+            if (typeof updateAuthUI === 'function') {
+                updateAuthUI();
+            }
+            
+            const mainSearchInput = document.getElementById('mainSearchInput');
+            const mainSearchBtn = document.getElementById('mainSearchBtn');
+            const searchResults = document.getElementById('searchResults');
+            const searchStats = document.getElementById('searchStats');
+            
+            // Получаем параметры из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q') || '';
+            const category = urlParams.get('category') || '';
+            const minPrice = urlParams.get('min_price') || '';
+            const maxPrice = urlParams.get('max_price') || '';
+            const ordering = urlParams.get('ordering') || '';
+            
+            // Устанавливаем значения в форму
+            if (query) {
+                mainSearchInput.value = query;
+                searchStats.textContent = `Поиск по запросу: "${query}"`;
+            }
+            
+            // Загружаем категории
+            loadCategories();
+            
+            // Выполняем поиск при загрузке страницы
+            if (query) {
+                performSearch();
+            }
+            
+            // Обработчики событий
+            mainSearchBtn.addEventListener('click', performSearch);
+            mainSearchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            document.getElementById('applyFiltersBtn').addEventListener('click', performSearch);
+            
+            function performSearch() {
+                const searchQuery = mainSearchInput.value.trim();
+                if (!searchQuery) {
+                    searchResults.innerHTML = '<div class="no-results"><h3>Введите поисковый запрос</h3><p>Попробуйте найти интересующую вас рекламу</p></div>';
+                    return;
+                }
+                
+                // Показываем загрузку
+                searchResults.innerHTML = '<div class="loading">Поиск результатов...</div>';
+                
+                // Собираем параметры поиска
+                const params = new URLSearchParams();
+                params.append('search', searchQuery);
+                
+                const categoryFilter = document.getElementById('categoryFilter').value;
+                const minPriceFilter = document.getElementById('minPriceFilter').value;
+                const maxPriceFilter = document.getElementById('maxPriceFilter').value;
+                const sortFilter = document.getElementById('sortFilter').value;
+                
+                if (categoryFilter) params.append('category', categoryFilter);
+                if (minPriceFilter) params.append('min_price', minPriceFilter);
+                if (maxPriceFilter) params.append('max_price', maxPriceFilter);
+                if (sortFilter) params.append('ordering', sortFilter);
+                
+                // Выполняем поиск
+                fetch(`/api/ads/?${params.toString()}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        displayResults(data.results || [], searchQuery);
+                        updateStats(data.results?.length || 0, searchQuery);
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        searchResults.innerHTML = '<div class="no-results"><h3>Ошибка поиска</h3><p>Попробуйте позже</p></div>';
+                    });
+            }
+            
+            function displayResults(results, query) {
+                if (results.length === 0) {
+                    searchResults.innerHTML = `
+                        <div class="no-results">
+                            <h3>Ничего не найдено</h3>
+                            <p>По запросу "${query}" ничего не найдено. Попробуйте изменить поисковый запрос или фильтры.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const resultsHtml = results.map(result => `
+                    <div class="result-card">
+                        <img src="${result.image || '/static/shop/img/banner_main.svg'}" alt="${result.title}">
+                        <h3>${result.title}</h3>
+                        <p>${result.description}</p>
+                        <div class="result-card-footer">
+                            <div class="result-price">${result.price.toLocaleString('ru-RU')} ₽</div>
+                            <div class="result-category">${result.category}</div>
+                        </div>
+                        <div class="result-card-actions">
+                            <button class="btn btn-primary" onclick="openOrderModal(${result.id}, '${result.title}', ${result.price})">
+                                Заказать
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                searchResults.innerHTML = `<div class="results-grid">${resultsHtml}</div>`;
+            }
+            
+            function updateStats(count, query) {
+                searchStats.textContent = `Найдено ${count} результатов по запросу: "${query}"`;
+            }
+            
+            function loadCategories() {
+                fetch('/api/categories/')
+                    .then(response => response.json())
+                    .then(data => {
+                        const categorySelect = document.getElementById('categoryFilter');
+                        categorySelect.innerHTML = '<option value="">Все категории</option>' +
+                            data.results.map(cat => `<option value="${cat.slug}">${cat.name}</option>`).join('');
+                    })
+                    .catch(error => console.error('Error loading categories:', error));
+            }
+        });
+        
+        // Функции для работы с модальным окном заказа
+        function openOrderModal(adId, serviceName, price) {
+            // Проверяем авторизацию пользователя
+            const accessToken = localStorage.getItem('access');
+            if (!accessToken) {
+                showAuthRequiredModal(serviceName, price);
+                return;
+            }
+            
+            const modal = document.getElementById('orderModal');
+            const adIdInput = document.getElementById('orderAdId');
+            const serviceInput = document.getElementById('orderService');
+            const priceInput = document.getElementById('orderPrice');
+            
+            adIdInput.value = adId;
+            serviceInput.value = serviceName;
+            priceInput.value = price.toLocaleString('ru-RU') + ' ₽';
+            
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function showAuthRequiredModal(serviceName, price) {
+            const modal = document.getElementById('authRequiredModal');
+            const serviceSpan = document.getElementById('authRequiredService');
+            const priceSpan = document.getElementById('authRequiredPrice');
+            
+            serviceSpan.textContent = serviceName;
+            priceSpan.textContent = price.toLocaleString('ru-RU') + ' ₽';
+            
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeOrderModal() {
+            const modal = document.getElementById('orderModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+            
+            // Очищаем форму
+            document.getElementById('orderForm').reset();
+        }
+        
+        function closeAuthRequiredModal() {
+            const modal = document.getElementById('authRequiredModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function openLoginModal() {
+            closeAuthRequiredModal();
+            // Используем существующую систему модальных окон
+            const loginModal = document.getElementById('modal-login');
+            if (loginModal) {
+                loginModal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function openRegisterModal() {
+            closeAuthRequiredModal();
+            // Используем существующую систему модальных окон
+            const registerModal = document.getElementById('modal-register');
+            if (registerModal) {
+                registerModal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        // Обработка отправки формы заказа
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderForm = document.getElementById('orderForm');
+            const submitBtn = document.getElementById('submitOrderBtn');
+            
+            orderForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(orderForm);
+                const orderData = {
+                    ad_id: formData.get('ad_id'),
+                    customer_name: formData.get('customer_name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    description: formData.get('description'),
+                    budget: formData.get('budget'),
+                    deadline: formData.get('deadline')
+                };
+                
+                // Показываем индикатор загрузки
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Отправка...';
+                
+                // Отправляем заказ
+                fetch('/api/orders/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(orderData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.id) {
+                        // Успешная отправка
+                        alert('Заказ успешно отправлен! Мы свяжемся с вами в ближайшее время.');
+                        closeOrderModal();
+                    } else {
+                        // Ошибка
+                        alert('Произошла ошибка при отправке заказа. Попробуйте позже.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Order error:', error);
+                    alert('Произошла ошибка при отправке заказа. Попробуйте позже.');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Отправить заказ';
+                });
+            });
+            
+            // Закрытие модального окна при клике вне его
+            document.getElementById('orderModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeOrderModal();
+                }
+            });
+            
+            // Закрытие модального окна авторизации при клике вне его
+            document.getElementById('authRequiredModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeAuthRequiredModal();
+                }
+            });
+            
+            // Обработчики для модальных окон авторизации
+            const loginModal = document.getElementById('modal-login');
+            const registerModal = document.getElementById('modal-register');
+            
+            if (loginModal) {
+                loginModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        loginModal.setAttribute('aria-hidden', 'true');
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+            }
+            
+            if (registerModal) {
+                registerModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        registerModal.setAttribute('aria-hidden', 'true');
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+            }
+        });
+        
+        // Функция для получения CSRF токена
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

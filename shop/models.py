@@ -57,6 +57,11 @@ class Order(TimeStampedModel):
         ("done", "Done"),
         ("cancelled", "Cancelled"),
     ]
+    PAYMENT_STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("paid", "Paid"),
+        ("failed", "Failed"),
+    ]
     customer_name = models.CharField(max_length=120)
     email = models.EmailField()
     phone = models.CharField(max_length=40)
@@ -64,6 +69,10 @@ class Order(TimeStampedModel):
     ad = models.ForeignKey(Ad, null=True, blank=True, on_delete=models.SET_NULL, related_name="orders")
     package = models.ForeignKey(Package, null=True, blank=True, on_delete=models.SET_NULL, related_name="orders")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending")
+    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    payment_date = models.DateTimeField(null=True, blank=True)
+    user = models.ForeignKey(get_user_model(), null=True, blank=True, on_delete=models.SET_NULL, related_name="shop_orders")
 
     class Meta:
         ordering = ["-created_at"]

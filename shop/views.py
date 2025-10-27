@@ -25,6 +25,19 @@ def profile_page(request):
     return render(request, "shop/profile.html")
 
 
+def search_results_page(request):
+    """Страница результатов поиска"""
+    query = request.GET.get('q', '')
+    context = {
+        'query': query,
+    }
+    return render(request, "shop/search_results.html", context)
+
+def new_admin_page(request):
+    """Новая админ-панель"""
+    return render(request, "shop/new_admin.html")
+
+
 def admin_dashboard(request):
     # Проверяем, что пользователь авторизован и является админом
     if not request.user.is_authenticated:

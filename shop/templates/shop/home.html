@@ -31,41 +31,29 @@
         </div>
     </section>
 
-    <section class="ads-sample container">
-        <div class="section-head">
-            <h2>Примеры рекламных размещений</h2>
-            <a class="link" href="/buy/">Все предложения →</a>
-        </div>
-        <div id="sampleAds" class="cards"></div>
-    </section>
 
-    <section class="testimonials container">
-        <h2>Отзывы клиентов</h2>
-        <div class="reviews">
-            <article class="review"><h4>Анна</h4><p>Запустили баннеры — трафик вырос на 35%.</p><span>★★★★★</span></article>
-            <article class="review"><h4>Игорь</h4><p>Четкие метрики и прозрачный отчёт.</p><span>★★★★☆</span></article>
-            <article class="review"><h4>Мария</h4><p>Email-кампания дала 12% конверсии.</p><span>★★★★★</span></article>
-            <article class="review"><h4>Дмитрий</h4><p>Рекомендую как надежного партнёра.</p><span>★★★★★</span></article>
-        </div>
-    </section>
+  
 
     <section class="packages container">
         <h2>Рекламные пакеты</h2>
         <div class="cards">
-            <div class="card">
+            <div class="card" data-package="start">
                 <h3>Старт</h3>
                 <p>Базовый набор каналов для проверки гипотез.</p>
-                <button class="btn" data-nav="order">Подробнее</button>
+                <div class="package-price">от 15 000 ₽</div>
+                <button class="btn package-details-btn" data-package="start">Подробнее</button>
             </div>
-            <div class="card">
+            <div class="card" data-package="growth">
                 <h3>Рост</h3>
                 <p>Оптимизация и масштабирование успешных каналов.</p>
-                <button class="btn" data-nav="order">Подробнее</button>
+                <div class="package-price">от 35 000 ₽</div>
+                <button class="btn package-details-btn" data-package="growth">Подробнее</button>
             </div>
-            <div class="card">
+            <div class="card" data-package="leader">
                 <h3>Лидер</h3>
                 <p>Максимальная охватность и бренд‑перформанс.</p>
-                <button class="btn" data-nav="order">Подробнее</button>
+                <div class="package-price">от 75 000 ₽</div>
+                <button class="btn package-details-btn" data-package="leader">Подробнее</button>
             </div>
         </div>
     </section>
@@ -75,6 +63,16 @@
         <button class="btn accent" data-nav="order">Заказать рекламу</button>
     </div>
     
+    <!-- Package Details Modal -->
+    <div id="packageModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="packageContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
     <!-- Order page content placeholder is a link; dedicated /order/ has full form -->
 {% endblock %}
 

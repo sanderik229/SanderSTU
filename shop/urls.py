@@ -18,7 +18,8 @@ urlpatterns = [
     path("order/", views.order_ads_page, name="order_ads"),
     path("my-orders/", views.my_orders_page, name="my_orders"),
     path("profile/", views.profile_page, name="profile"),
-    path("admin-panel/", views.admin_dashboard, name="admin_dashboard"),
+    path("search/", views.search_results_page, name="search_results"),
+    path("new-admin/", views.new_admin_page, name="new_admin"),
 
     # REST API
     path("api/", include(router.urls)),

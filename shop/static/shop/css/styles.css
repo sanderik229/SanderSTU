@@ -16,7 +16,8 @@ html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,Segoe U
 .search-wrap{margin-left:auto;display:flex;align-items:center;gap:8px;position:relative}
 .search-wrap input{height:38px;border:1px solid var(--border);border-radius:10px;padding:0 12px;width:220px}
 .search-results{position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(15,23,42,.08);display:none;max-height:320px;overflow:auto}
-.search-item{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center}
+.search-item{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;cursor:pointer;transition:background-color 0.2s ease}
+.search-item:hover{background-color:#f8fafc}
 .search-item:last-child{border-bottom:none}
 .search-item img{width:48px;height:48px;object-fit:cover;border-radius:8px}
 .auth-actions{display:flex;gap:8px}
@@ -117,6 +118,179 @@ html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,Segoe U
   .burger{display:block}
   .features,.cards,.reviews{grid-template-columns:1fr}
   .form-wide .grid{grid-template-columns:1fr}
+}
+
+/* Package pricing */
+.package-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 12px 0;
+    text-align: center;
+}
+
+/* Modal styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-content .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    padding: 16px 20px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-content .close:hover {
+    color: #000;
+}
+
+.package-details {
+    padding: 20px;
+}
+
+.package-details h2 {
+    margin: 0 0 16px 0;
+    color: var(--accent);
+    font-size: 24px;
+}
+
+.package-details .price {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 20px;
+}
+
+.package-features {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.package-features li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.package-features li:before {
+    content: "✓";
+    color: var(--success);
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.package-description {
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.package-order-btn {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.package-order-btn:hover {
+    background: var(--accent-strong);
+}
+
+/* Payment modal styles */
+.payment-form {
+    padding: 20px;
+}
+
+.payment-form h3 {
+    margin: 0 0 20px 0;
+    color: var(--text);
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.payment-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+}
+
+.pay-btn {
+    width: 100%;
+    background: var(--success);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 20px;
+}
+
+.pay-btn:hover {
+    background: #15803d;
+}
+
+.pay-btn:disabled {
+    background: var(--muted);
+    cursor: not-allowed;
 }
 
 

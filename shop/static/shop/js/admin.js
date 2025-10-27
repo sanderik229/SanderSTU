@@ -8,9 +8,22 @@ class AdminDashboard {
 
     init() {
         this.setupEventListeners();
+        this.initializeSections();
         this.loadDashboardData();
         this.initializeCharts();
         this.loadNotifications();
+    }
+
+    initializeSections() {
+        // Hide all sections except dashboard
+        document.querySelectorAll('.admin-section').forEach(sec => {
+            sec.style.display = 'none';
+        });
+        // Show dashboard by default
+        const dashboardSection = document.getElementById('dashboard');
+        if (dashboardSection) {
+            dashboardSection.style.display = 'block';
+        }
     }
 
     setupEventListeners() {
@@ -79,30 +92,43 @@ class AdminDashboard {
     }
 
     loadSectionContent(section) {
-        const content = document.getElementById('admin-content');
+        // Hide all sections first
+        document.querySelectorAll('.admin-section').forEach(sec => {
+            sec.style.display = 'none';
+        });
         
-        switch (section) {
-            case 'dashboard':
-                this.loadDashboardContent();
-                break;
-            case 'services':
-                this.loadServicesContent();
-                break;
-            case 'orders':
-                this.loadOrdersContent();
-                break;
-            case 'users':
-                this.loadUsersContent();
-                break;
-            case 'analytics':
-                this.loadAnalyticsContent();
-                break;
-            case 'reports':
-                this.loadReportsContent();
-                break;
-            case 'settings':
-                this.loadSettingsContent();
-                break;
+        // Show the selected section
+        const targetSection = document.getElementById(section);
+        if (targetSection) {
+            targetSection.style.display = 'block';
+            
+            // Load data for the section
+            switch (section) {
+                case 'dashboard':
+                    this.loadDashboardData();
+                    this.initializeCharts();
+                    this.loadRecentOrders();
+                    this.loadNotifications();
+                    break;
+                case 'services':
+                    this.loadServices();
+                    break;
+                case 'orders':
+                    this.loadOrders();
+                    break;
+                case 'users':
+                    this.loadUsers();
+                    break;
+                case 'analytics':
+                    this.loadAnalytics();
+                    break;
+                case 'reports':
+                    this.loadReports();
+                    break;
+                case 'settings':
+                    // Settings is static content, no data loading needed
+                    break;
+            }
         }
     }
 
@@ -587,35 +613,46 @@ class AdminDashboard {
     }
 
     async loadServices() {
-        // Mock services data
-        const services = [
-            { id: 1, name: 'YouTube реклама', price: 50000, status: 'active', orders: 15 },
-            { id: 2, name: 'Instagram Stories', price: 25000, status: 'active', orders: 23 },
-            { id: 3, name: 'Telegram канал', price: 30000, status: 'inactive', orders: 8 }
-        ];
+        try {
+            const response = await fetch('/api/v2/admin/services/', {
+                headers: this.getAuthHeaders()
+            });
 
-        this.renderServices(services);
+            if (response.ok) {
+                const data = await response.json();
+                const services = data.results || [];
+                this.renderServices(services);
+            } else {
+                console.error('Failed to load services');
+                this.showToast('Ошибка загрузки услуг', 'error');
+            }
+        } catch (error) {
+            console.error('Error loading services:', error);
+            this.showToast('Ошибка загрузки услуг', 'error');
+        }
     }
 
     renderServices(services) {
-        const container = document.getElementById('servicesGrid');
-        if (!container) return;
+        // Find tbody within the services section
+        const servicesSection = document.getElementById('services');
+        const tbody = servicesSection ? servicesSection.querySelector('#servicesTable') : null;
+        if (!tbody) return;
 
-        container.innerHTML = services.map(service => `
-            <div class="service-card">
-                <div class="service-header">
-                    <h4>${service.name}</h4>
-                    <span class="service-status ${service.status}">${service.status === 'active' ? 'Активна' : 'Неактивна'}</span>
-                </div>
-                <div class="service-info">
-                    <p>Цена: ${service.price.toLocaleString('ru-RU')} ₽</p>
-                    <p>Заказов: ${service.orders}</p>
-                </div>
-                <div class="service-actions">
-                    <button class="btn btn-sm" onclick="adminDashboard.editService(${service.id})">Редактировать</button>
-                    <button class="btn btn-sm btn-danger" onclick="adminDashboard.deleteService(${service.id})">Удалить</button>
-                </div>
-            </div>
+        tbody.innerHTML = services.map(service => `
+            <tr data-service-id="${service.id}">
+                <td>${service.id}</td>
+                <td>${service.title}</td>
+                <td>${service.description || '-'}</td>
+                <td>${service.price.toLocaleString('ru-RU')} ₽</td>
+                <td>${service.social_network || '-'}</td>
+                <td><span class="status-badge ${service.is_active ? 'active' : 'inactive'}">${service.is_active ? 'Активен' : 'Неактивен'}</span></td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="adminDashboard.editService(${service.id})">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="adminDashboard.deleteService(${service.id})">🗑️</button>
+                    </div>
+                </td>
+            </tr>
         `).join('');
     }
 
@@ -654,38 +691,28 @@ class AdminDashboard {
     }
 
     renderOrders(orders) {
-        const container = document.getElementById('ordersTable');
-        if (!container) return;
+        // Find tbody within the orders section
+        const ordersSection = document.getElementById('orders');
+        const tbody = ordersSection ? ordersSection.querySelector('#ordersTable') : null;
+        if (!tbody) return;
 
-        container.innerHTML = `
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Клиент</th>
-                        <th>Услуга</th>
-                        <th>Статус</th>
-                        <th>Дата</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${orders.map(order => `
-                        <tr>
-                            <td>#${order.id}</td>
-                            <td>${order.full_name || order.user?.username || 'Неизвестно'}</td>
-                            <td>${order.offer?.title || 'Персональный заказ'}</td>
-                            <td><span class="status-badge ${order.status}">${this.getStatusText(order.status)}</span></td>
-                            <td>${new Date(order.created_at).toLocaleDateString('ru-RU')}</td>
-                            <td>
-                                <button class="btn btn-sm" onclick="adminDashboard.viewOrder(${order.id})">Просмотр</button>
-                                <button class="btn btn-sm" onclick="adminDashboard.updateOrderStatus(${order.id})">Изменить статус</button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
+        tbody.innerHTML = orders.map(order => `
+            <tr>
+                <td>#${order.id}</td>
+                <td>${order.full_name || order.user?.username || 'Неизвестно'}</td>
+                <td>${order.email || order.user?.email || ''}</td>
+                <td>${order.offer?.title || 'Персональный заказ'}</td>
+                <td>${order.offer?.ad_type || '-'}</td>
+                <td><span class="status-badge ${order.status}">${this.getStatusText(order.status)}</span></td>
+                <td>${new Date(order.created_at).toLocaleDateString('ru-RU')}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="adminDashboard.viewOrder(${order.id})">✏️</button>
+                        <button class="btn btn-sm btn-success" onclick="adminDashboard.updateOrderStatus(${order.id})">✓</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
     }
 
     async loadUsers() {
@@ -723,62 +750,86 @@ class AdminDashboard {
     }
 
     renderUsers(users) {
-        const container = document.getElementById('usersTable');
-        if (!container) return;
+        // Find tbody within the users section
+        const usersSection = document.getElementById('users');
+        const tbody = usersSection ? usersSection.querySelector('#usersTable') : null;
+        if (!tbody) return;
 
-        container.innerHTML = `
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Имя</th>
-                        <th>Email</th>
-                        <th>Роль</th>
-                        <th>Статус</th>
-                        <th>Дата регистрации</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${users.map(user => `
-                        <tr>
-                            <td>${user.id}</td>
-                            <td>${user.profile?.full_name || user.username}</td>
-                            <td>${user.email}</td>
-                            <td>${user.profile?.role || 'user'}</td>
-                            <td><span class="status-badge ${user.is_active ? 'active' : 'inactive'}">${user.is_active ? 'Активен' : 'Заблокирован'}</span></td>
-                            <td>${new Date(user.date_joined).toLocaleDateString('ru-RU')}</td>
-                            <td>
-                                <button class="btn btn-sm" onclick="adminDashboard.editUser(${user.id})">Редактировать</button>
-                                <button class="btn btn-sm ${user.is_active ? 'btn-danger' : 'btn-success'}" onclick="adminDashboard.toggleUserStatus(${user.id})">
-                                    ${user.is_active ? 'Заблокировать' : 'Разблокировать'}
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
+        tbody.innerHTML = users.map(user => `
+            <tr>
+                <td>${user.id}</td>
+                <td>${user.email}</td>
+                <td>${user.profile?.full_name || user.username}</td>
+                <td><span class="role-badge ${user.profile?.role || 'user'}">${user.profile?.role === 'admin' ? 'Админ' : 'Пользователь'}</span></td>
+                <td>${new Date(user.date_joined).toLocaleDateString('ru-RU')}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-warning" onclick="adminDashboard.editUser(${user.id})">✏️</button>
+                        <button class="btn btn-sm btn-danger" onclick="adminDashboard.deleteUser(${user.id})">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
     }
 
     loadAnalytics() {
+        // Load analytics data
+        this.loadAnalyticsData();
         // Initialize analytics charts
         setTimeout(() => {
             this.initializeAnalyticsCharts();
         }, 100);
     }
 
+    async loadAnalyticsData() {
+        try {
+            const response = await fetch('/api/v2/admin/stats/', {
+                headers: this.getAuthHeaders()
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('monthRevenue').textContent = `${data.monthlyRevenue || 0} ₽`;
+                document.getElementById('activeOrdersCount').textContent = data.activeOrders || 0;
+                document.getElementById('newUsersCount').textContent = data.newUsers || 0;
+                document.getElementById('avgCheck').textContent = `${data.averageOrder || 0} ₽`;
+            }
+        } catch (error) {
+            console.error('Error loading analytics:', error);
+        }
+    }
+
+    async backupDatabase() {
+        this.showToast('Создание резервной копии...', 'info');
+        
+        try {
+            const response = await fetch('/api/v2/admin/backup/', {
+                method: 'POST',
+                headers: this.getAuthHeaders()
+            });
+
+            if (response.ok) {
+                this.showToast('Резервная копия создана успешно', 'success');
+            } else {
+                this.showToast('Ошибка создания резервной копии', 'error');
+            }
+        } catch (error) {
+            console.error('Error creating backup:', error);
+            this.showToast('Ошибка создания резервной копии', 'error');
+        }
+    }
+
     initializeAnalyticsCharts() {
-        // Sales Chart
-        const salesCtx = document.getElementById('salesChart');
-        if (salesCtx) {
-            new Chart(salesCtx, {
+        // Popular Services Chart
+        const popularServicesCtx = document.getElementById('popularServicesChart');
+        if (popularServicesCtx) {
+            new Chart(popularServicesCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                    labels: ['YouTube реклама', 'Instagram Stories', 'Telegram канал', 'TikTok реклама', 'VK объявления'],
                     datasets: [{
-                        label: 'Продажи',
-                        data: [120000, 150000, 180000, 200000, 160000, 140000, 110000],
+                        label: 'Количество заказов',
+                        data: [45, 32, 28, 15, 12],
                         backgroundColor: '#3b82f6'
                     }]
                 },
@@ -789,16 +840,16 @@ class AdminDashboard {
             });
         }
 
-        // Categories Chart
-        const categoriesCtx = document.getElementById('categoriesChart');
-        if (categoriesCtx) {
-            new Chart(categoriesCtx, {
+        // Orders Status Chart
+        const ordersStatusCtx = document.getElementById('ordersStatusChart');
+        if (ordersStatusCtx) {
+            new Chart(ordersStatusCtx, {
                 type: 'pie',
                 data: {
-                    labels: ['YouTube', 'Instagram', 'Telegram', 'TikTok'],
+                    labels: ['Новые', 'Оплачены', 'В работе', 'Выполнены', 'Отменены'],
                     datasets: [{
-                        data: [40, 30, 20, 10],
-                        backgroundColor: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4']
+                        data: [8, 25, 12, 45, 3],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#6366f1', '#ef4444']
                     }]
                 },
                 options: {
@@ -869,83 +920,120 @@ class AdminDashboard {
     }
 
     // Action methods
-    async addService() {
-        const title = prompt('Название услуги:');
-        if (!title) return;
-        
-        const description = prompt('Описание услуги:');
-        const price = prompt('Цена услуги:');
-        if (!price || isNaN(price)) {
-            this.showToast('Введите корректную цену', 'error');
-            return;
-        }
-        
-        const social_network = prompt('Социальная сеть:');
+    addService() {
+        document.getElementById('serviceModalTitle').textContent = 'Добавить услугу';
+        document.getElementById('serviceForm').reset();
+        document.getElementById('serviceId').value = '';
+        document.getElementById('serviceModal').style.display = 'flex';
+        this.setupServiceFormListeners();
+    }
+
+    async saveService() {
+        const form = document.getElementById('serviceForm');
+        const formData = new FormData(form);
+        const serviceId = document.getElementById('serviceId').value;
+        const isEdit = !!serviceId;
+
+        const data = {
+            title: document.getElementById('serviceTitle').value,
+            description: document.getElementById('serviceDescription').value,
+            price: parseFloat(document.getElementById('servicePrice').value),
+            social_network: document.getElementById('serviceSocialNetwork').value,
+            is_active: document.getElementById('serviceStatus').value === 'true'
+        };
 
         try {
-            const response = await fetch('/api/v2/admin/services/create/', {
-                method: 'POST',
+            const url = isEdit 
+                ? `/api/v2/admin/services/${serviceId}/update/`
+                : '/api/v2/admin/services/create/';
+            
+            const method = isEdit ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
                 headers: this.getAuthHeaders(),
-                body: JSON.stringify({
-                    title: title,
-                    description: description || '',
-                    price: parseFloat(price),
-                    social_network: social_network || ''
-                })
+                body: JSON.stringify(data)
             });
 
             if (response.ok) {
-                this.showToast('Услуга добавлена успешно', 'success');
-                this.loadServices(); // Refresh services list
+                this.showToast(`Услуга ${isEdit ? 'обновлена' : 'добавлена'} успешно`, 'success');
+                this.loadServices();
+                this.closeServiceModal();
             } else {
                 const error = await response.json();
-                this.showToast('Ошибка добавления услуги: ' + error.detail, 'error');
+                this.showToast('Ошибка: ' + (error.detail || error.message), 'error');
             }
         } catch (error) {
-            console.error('Error adding service:', error);
-            this.showToast('Ошибка добавления услуги', 'error');
+            console.error('Error saving service:', error);
+            this.showToast('Ошибка сохранения услуги', 'error');
         }
     }
 
     async editService(id) {
-        const title = prompt('Новое название услуги:');
-        if (!title) return;
+        document.getElementById('serviceModalTitle').textContent = 'Редактировать услугу';
+        document.getElementById('serviceId').value = id;
         
-        const description = prompt('Новое описание услуги:');
-        const price = prompt('Новая цена услуги:');
-        if (!price || isNaN(price)) {
-            this.showToast('Введите корректную цену', 'error');
-            return;
-        }
-        
-        const social_network = prompt('Социальная сеть:');
-        const is_active = confirm('Услуга активна?');
-
+        // Load service data from API
         try {
-            const response = await fetch(`/api/v2/admin/services/${id}/update/`, {
-                method: 'PUT',
-                headers: this.getAuthHeaders(),
-                body: JSON.stringify({
-                    title: title,
-                    description: description || '',
-                    price: parseFloat(price),
-                    social_network: social_network || '',
-                    is_active: is_active
-                })
+            const response = await fetch(`/api/v2/admin/services/${id}/`, {
+                headers: this.getAuthHeaders()
             });
-
+            
             if (response.ok) {
-                this.showToast('Услуга обновлена успешно', 'success');
-                this.loadServices(); // Refresh services list
-            } else {
-                const error = await response.json();
-                this.showToast('Ошибка обновления услуги: ' + error.detail, 'error');
+                const service = await response.json();
+                document.getElementById('serviceTitle').value = service.title || '';
+                document.getElementById('serviceDescription').value = service.description || '';
+                document.getElementById('servicePrice').value = service.price || '';
+                document.getElementById('serviceSocialNetwork').value = service.social_network || 'instagram';
+                document.getElementById('serviceStatus').value = service.is_active ? 'true' : 'false';
             }
         } catch (error) {
-            console.error('Error updating service:', error);
-            this.showToast('Ошибка обновления услуги', 'error');
+            console.error('Error loading service:', error);
+            // Still show modal with empty form
         }
+        
+        document.getElementById('serviceModal').style.display = 'flex';
+        this.setupServiceFormListeners();
     }
+
+    setupServiceFormListeners() {
+        const form = document.getElementById('serviceForm');
+        const oldSubmit = form._submitHandler;
+        if (oldSubmit) form.removeEventListener('submit', oldSubmit);
+        
+        const submitHandler = (e) => {
+            e.preventDefault();
+            this.saveService();
+        };
+        
+        form._submitHandler = submitHandler;
+        form.addEventListener('submit', submitHandler);
+    }
+
+    closeServiceModal() {
+        document.getElementById('serviceModal').style.display = 'none';
+        document.getElementById('serviceForm').reset();
+    }
+
+    async getServices() {
+        const servicesSection = document.getElementById('services');
+        const tbody = servicesSection ? servicesSection.querySelector('#servicesTable') : null;
+        if (!tbody) return [];
+        
+        const rows = tbody.querySelectorAll('tr');
+        return Array.from(rows).map(row => {
+            const id = parseInt(row.getAttribute('data-service-id') || row.querySelector('td:first-child')?.textContent || '0');
+            return {
+                id: id,
+                name: row.querySelector('td:nth-child(2)')?.textContent || '',
+                description: row.querySelector('td:nth-child(3)')?.textContent || '',
+                price: parseFloat(row.querySelector('td:nth-child(4)')?.textContent?.replace(/[^\d,.]/g, '').replace(',', '.')) || 0,
+                social_network: row.querySelector('td:nth-child(5)')?.textContent || '',
+                status: row.querySelector('td:nth-child(6) .status-badge')?.textContent === 'Активен' ? 'active' : 'inactive'
+            };
+        });
+    }
+
 
     async deleteService(id) {
         if (!confirm('Вы уверены, что хотите удалить эту услугу?')) {
@@ -978,37 +1066,99 @@ class AdminDashboard {
         this.showToast(`Изменение статуса заказа #${id}`, 'info');
     }
 
+    addUser() {
+        document.getElementById('userModalTitle').textContent = 'Добавить пользователя';
+        document.getElementById('userForm').reset();
+        document.getElementById('userId').value = '';
+        document.getElementById('userModal').style.display = 'flex';
+        this.setupUserFormListeners();
+    }
+
     async editUser(id) {
-        const email = prompt('Новый email:');
-        if (!email) return;
+        document.getElementById('userModalTitle').textContent = 'Редактировать пользователя';
+        document.getElementById('userId').value = id;
         
-        const full_name = prompt('Новое ФИО:');
-        const password = prompt('Новый пароль (оставьте пустым, чтобы не менять):');
-        const role = prompt('Роль (user/admin):') || 'user';
+        try {
+            const response = await fetch(`/api/v2/admin/users/${id}/`, {
+                headers: this.getAuthHeaders()
+            });
+            
+            if (response.ok) {
+                const user = await response.json();
+                document.getElementById('userEmail').value = user.email || '';
+                document.getElementById('userFullName').value = user.profile?.full_name || user.username || '';
+                document.getElementById('userPassword').value = '';
+                document.getElementById('userRole').value = user.profile?.role || 'user';
+                document.getElementById('userStatus').value = user.is_active ? 'true' : 'false';
+            }
+        } catch (error) {
+            console.error('Error loading user:', error);
+        }
+        
+        document.getElementById('userModal').style.display = 'flex';
+        this.setupUserFormListeners();
+    }
+
+    async saveUser() {
+        const userId = document.getElementById('userId').value;
+        const isEdit = !!userId;
+
+        const data = {
+            email: document.getElementById('userEmail').value,
+            full_name: document.getElementById('userFullName').value,
+            role: document.getElementById('userRole').value,
+            is_active: document.getElementById('userStatus').value === 'true'
+        };
+
+        const password = document.getElementById('userPassword').value;
+        if (password) {
+            data.password = password;
+        }
 
         try {
-            const response = await fetch(`/api/v2/admin/users/${id}/update/`, {
-                method: 'PUT',
+            const url = isEdit 
+                ? `/api/v2/admin/users/${userId}/update/`
+                : '/api/v2/admin/users/create/';
+            
+            const method = isEdit ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
                 headers: this.getAuthHeaders(),
-                body: JSON.stringify({
-                    email: email,
-                    full_name: full_name || '',
-                    password: password || '',
-                    role: role
-                })
+                body: JSON.stringify(data)
             });
 
             if (response.ok) {
-                this.showToast('Пользователь обновлен успешно', 'success');
-                this.loadUsers(); // Refresh users list
+                this.showToast(`Пользователь ${isEdit ? 'обновлен' : 'добавлен'} успешно`, 'success');
+                this.loadUsers();
+                this.closeUserModal();
             } else {
                 const error = await response.json();
-                this.showToast('Ошибка обновления пользователя: ' + error.detail, 'error');
+                this.showToast('Ошибка: ' + (error.detail || error.message), 'error');
             }
         } catch (error) {
-            console.error('Error updating user:', error);
-            this.showToast('Ошибка обновления пользователя', 'error');
+            console.error('Error saving user:', error);
+            this.showToast('Ошибка сохранения пользователя', 'error');
         }
+    }
+
+    setupUserFormListeners() {
+        const form = document.getElementById('userForm');
+        const oldSubmit = form._submitHandler;
+        if (oldSubmit) form.removeEventListener('submit', oldSubmit);
+        
+        const submitHandler = (e) => {
+            e.preventDefault();
+            this.saveUser();
+        };
+        
+        form._submitHandler = submitHandler;
+        form.addEventListener('submit', submitHandler);
+    }
+
+    closeUserModal() {
+        document.getElementById('userModal').style.display = 'none';
+        document.getElementById('userForm').reset();
     }
 
     async deleteUser(id) {
@@ -1024,13 +1174,43 @@ class AdminDashboard {
 
             if (response.ok) {
                 this.showToast('Пользователь удален успешно', 'success');
-                this.loadUsers(); // Refresh users list
+                this.loadUsers();
             } else {
-                this.showToast('Ошибка удаления пользователя', 'error');
+                const errorData = await response.json();
+                this.showToast('Ошибка удаления пользователя: ' + (errorData.detail || errorData.error), 'error');
             }
         } catch (error) {
             console.error('Error deleting user:', error);
             this.showToast('Ошибка удаления пользователя', 'error');
+        }
+    }
+
+    async generateMonthlyReportPDF() {
+        this.showToast('Генерация отчета...', 'info');
+        
+        try {
+            const response = await fetch('/api/v2/admin/reports/monthly/', {
+                method: 'GET',
+                headers: this.getAuthHeaders()
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `monthly_report_${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                this.showToast('Отчет успешно скачан', 'success');
+            } else {
+                this.showToast('Ошибка генерации отчета', 'error');
+            }
+        } catch (error) {
+            console.error('Error generating report:', error);
+            this.showToast('Ошибка генерации отчета', 'error');
         }
     }
 
@@ -1355,3 +1535,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
