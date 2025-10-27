@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'payments',
     'reviews',
     'adminpanel',
+    'managers',
 ]
 
 MIDDLEWARE = [
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "adminpanel.middleware.JWTAuthenticationMiddleware",
+    "managers.middleware.ManagerMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

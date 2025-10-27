@@ -380,16 +380,20 @@ function updateAuthUI(){
   const authUser = $('#authUser');
   const nameSpan = $('#userNameDisplay');
   const adminBtn = $('#menuAdmin');
+  const managerBtn = $('#menuManager');
   
   if(access){
     authActions.style.display='none';
     authUser.style.display='flex';
     nameSpan.textContent = storage.getEmail() || '';
     
-    // Проверяем, является ли пользователь администратором
-    checkAdminStatus().then(isAdmin => {
+    // Проверяем роль пользователя
+    checkAdminStatus().then(roles => {
       if(adminBtn) {
-        adminBtn.style.display = isAdmin ? 'block' : 'none';
+        adminBtn.style.display = roles.isAdmin || roles.isSuperAdmin ? 'block' : 'none';
+      }
+      if(managerBtn) {
+        managerBtn.style.display = roles.isManager ? 'block' : 'none';
       }
     });
   } else {
@@ -397,6 +401,7 @@ function updateAuthUI(){
     authUser.style.display='none';
     if(nameSpan) nameSpan.textContent = '';
     if(adminBtn) adminBtn.style.display = 'none';
+    if(managerBtn) managerBtn.style.display = 'none';
   }
 }
 
@@ -405,12 +410,20 @@ async function checkAdminStatus() {
     const me = await api.me();
     if(me) {
       const role = me.profile && me.profile.role ? me.profile.role : 'user';
-      return role === 'admin' || me.is_staff || me.is_superuser;
+      const isAdmin = role === 'admin' || me.is_staff || me.is_superuser;
+      const isManager = me.is_staff && !me.is_superuser;
+      
+      // Возвращаем информацию о роли пользователя
+      return {
+        isAdmin: isAdmin && !isManager,
+        isManager: isManager,
+        isSuperAdmin: me.is_superuser
+      };
     }
   } catch(e) {
     console.error('Ошибка проверки статуса администратора:', e);
   }
-  return false;
+  return { isAdmin: false, isManager: false, isSuperAdmin: false };
 }
 
 async function postLoginFlow(){
@@ -423,10 +436,18 @@ async function postLoginFlow(){
       updateAuthUI();
       const role = me.profile && me.profile.role ? me.profile.role : 'user';
       const isAdmin = role === 'admin' || me.is_staff || me.is_superuser;
-      if(isAdmin){
+      
+      // Проверяем, является ли пользователь менеджером
+      const isManager = me.is_staff && !me.is_superuser;
+      
+      if(isAdmin && !isManager){
+        // Супер-админ или админ - перенаправляем в админ-панель
         window.location.assign('/admin-panel/');
+      } else if(isManager){
+        // Менеджер - перенаправляем в панель менеджера
+        window.location.assign('/manager/');
       } else {
-        // user dashboard could be added; for now, stay on home
+        // Обычный пользователь - остаемся на главной странице
         // window.location.assign('/');
       }
     } else {
@@ -861,6 +882,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const menuProfile = $('#menuProfile');
   const menuOrders = $('#menuOrders');
   const menuAdmin = $('#menuAdmin');
+  const menuManager = $('#menuManager');
   if(userNameBtn && userMenu){
     userNameBtn.addEventListener('click', (e)=>{ e.stopPropagation(); const open = userMenu.style.display==='block'; userMenu.style.display = open ? 'none' : 'block'; userNameBtn.setAttribute('aria-expanded', (!open).toString()); });
     document.addEventListener('click', ()=>{ userMenu.style.display='none'; userNameBtn.setAttribute('aria-expanded','false'); });
@@ -868,6 +890,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(menuProfile){ menuProfile.addEventListener('click', ()=>{ userMenu.style.display='none'; window.location.assign('/profile/'); }); }
   if(menuOrders){ menuOrders.addEventListener('click', ()=>{ userMenu.style.display='none'; window.location.assign('/my-orders/'); }); }
   if(menuAdmin){ menuAdmin.addEventListener('click', ()=>{ userMenu.style.display='none'; window.location.assign('/admin-panel/'); }); }
+  if(menuManager){ menuManager.addEventListener('click', ()=>{ userMenu.style.display='none'; window.location.assign('/manager/'); }); }
   console.log('All setup functions completed');
 });
 
