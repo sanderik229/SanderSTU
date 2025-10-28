@@ -17,7 +17,6 @@
             <nav class="main-nav">
                 <button class="btn ghost" data-nav="buy">Купить рекламу</button>
                 <button class="btn" data-nav="order">Заказать рекламу</button>
-                <a href="/manager/public-orders/" class="btn secondary">Доступные заказы</a>
             </nav>
             <div class="search-wrap">
                 <input id="globalSearchInput" type="text" placeholder="Поиск по рекламе..." aria-label="Поиск">
@@ -107,6 +106,23 @@
                 <button class="btn accent" type="submit">Купить</button>
                 <p id="purchaseStatus" class="form-status" role="status"></p>
             </form>
+        </div>
+    </div>
+
+    <!-- Auth Required Modal -->
+    <div class="modal auth-required-modal" id="modal-auth-required" aria-hidden="true">
+        <div class="modal-backdrop" data-modal-close></div>
+        <div class="modal-dialog" style="max-width: 500px;">
+            <div class="auth-required-content">
+                <div class="auth-required-icon">🔒</div>
+                <h2>Требуется авторизация</h2>
+                <p class="auth-required-text">Для создания заказа необходимо войти в систему или зарегистрироваться.</p>
+                <p class="auth-required-subtext">Пожалуйста, авторизуйтесь, чтобы продолжить оформление заказа.</p>
+                <div class="auth-required-actions">
+                    <button class="btn accent" onclick="closeAuthModalAndOpen('login')">Войти</button>
+                    <button class="btn" onclick="closeAuthModalAndOpen('register')">Зарегистрироваться</button>
+                </div>
+            </div>
         </div>
     </div>
 

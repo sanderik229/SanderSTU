@@ -73,6 +73,14 @@ function $all(sel, root=document){return Array.from(root.querySelectorAll(sel))}
 function navigate(where){
   const map = { buy: '/buy/', order: '/order/' };
   const url = map[where];
+  if(url && where === 'order'){
+    // Check if user is authenticated before going to order page
+    const isAuthenticated = storage.getAccess();
+    if(!isAuthenticated){
+      showModal('auth-required');
+      return;
+    }
+  }
   if(url){ window.location.assign(url); }
 }
 
@@ -83,9 +91,18 @@ function cardTemplate(ad){
     <p>${ad.description}</p>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
       <strong>${ad.price.toLocaleString('ru-RU')} ₽</strong>
-      <a class="btn small" href="/order/">Заказать</a>
+      <button class="btn small" onclick="checkAuthThenNavigate('order')">Заказать</button>
     </div>
   </div>`
+}
+
+window.checkAuthThenNavigate = function(where){
+  const isAuthenticated = storage.getAccess();
+  if(!isAuthenticated){
+    showModal('auth-required');
+  } else {
+    navigate(where);
+  }
 }
 
 function offerCardTemplate(offer){
@@ -322,6 +339,10 @@ function setupOrderForm(){
         setTimeout(() => {
           window.location.assign('/my-orders/');
         }, 2000);
+      } else if(response.status === 401 || response.status === 403) {
+        // Show auth required modal for unauthorized requests
+        showModal('auth-required');
+        status.textContent = '';
       } else {
         const errorText = await response.text();
         throw new Error(errorText || 'Error');
@@ -373,6 +394,17 @@ function setupAuthModals(){
 }
 
 function showModal(id){ const m=$(`#modal-${id}`); if(m){ m.setAttribute('aria-hidden','false'); }}
+
+function closeAuthModalAndOpen(modalType){
+  // Close auth required modal first
+  $('#modal-auth-required').setAttribute('aria-hidden', 'true');
+  // Then open the requested modal after a small delay
+  setTimeout(() => {
+    showModal(modalType);
+  }, 100);
+}
+
+window.closeAuthModalAndOpen = closeAuthModalAndOpen;
 
 function updateAuthUI(){
   const access = storage.getAccess();
@@ -451,15 +483,22 @@ async function postLoginFlow(){
       
       const role = me.profile && me.profile.role ? me.profile.role : 'user';
       const isAdmin = role === 'admin' || me.is_superuser;
+      const isManagerUser = role === 'manager' || isManager;
       
-      if(isManager){
+      // Проверяем, не находимся ли уже в нужной панели
+      const currentPath = window.location.pathname;
+      
+      if(isManagerUser && !currentPath.startsWith('/manager/')){
         // Менеджер - перенаправляем в панель менеджера
         console.log('Перенаправляем менеджера в панель менеджера');
         window.location.assign('/manager/');
-      } else if(isAdmin){
+      } else if(isAdmin && !currentPath.startsWith('/admin-panel/')){
         // Супер-админ или админ - перенаправляем в админ-панель
         console.log('Перенаправляем админа в админ-панель');
         window.location.assign('/admin-panel/');
+      } else if(isAdmin || isManagerUser) {
+        // Уже в нужной панели, не делаем редирект
+        console.log('Уже в нужной панели:', currentPath);
       } else {
         // Обычный пользователь - остаемся на главной странице
         console.log('Обычный пользователь, остаемся на главной');
@@ -672,6 +711,14 @@ function setupMyOrdersPage(){
 // Purchase modal functions - make it global
 window.openPurchaseModal = function(offerId) {
   console.log('Opening purchase modal for offer:', offerId);
+  
+  // Check if user is authenticated
+  const isAuthenticated = storage.getAccess();
+  if(!isAuthenticated){
+    showModal('auth-required');
+    return;
+  }
+  
   const modal = $('#modal-purchase');
   const offerDetails = $('#offerDetails');
   const selectedOfferId = $('#selectedOfferId');
@@ -681,7 +728,7 @@ window.openPurchaseModal = function(offerId) {
     return;
   }
   
-  // Store offer ID
+  // Store offer ID (if it's a service ID starting with "service_", extract the actual ID)
   selectedOfferId.value = offerId;
   
   // Find offer data from current offers
@@ -756,15 +803,31 @@ function setupPurchaseForm(){
     
     status.textContent = 'Отправка...';
     
+    // Check if this is a service (ID starts with "service_")
+    const isService = offerId.startsWith('service_');
+    
     // Create order data
     const orderData = {
-      offer_id: parseInt(offerId),
       full_name: data.full_name,
       email: data.email,
       phone: data.phone,
-      description: data.description,
-      order_type: 'offer'
+      description: data.description
     };
+    
+    // If it's a service, don't include offer_id (will create personal order)
+    // Otherwise, include offer_id (will create offer order)
+    if (!isService) {
+      orderData.offer_id = parseInt(offerId);
+      orderData.order_type = 'offer';
+    } else {
+      // For services, create personal order
+      orderData.order_type = 'personal';
+      orderData.ad_type = 'service';
+      // Extract service ID from "service_X" format
+      const serviceId = offerId.replace('service_', '');
+      orderData.budget = parseFloat(data.budget) || 0;
+      orderData.service_id = serviceId;
+    }
     
     try {
       // Try to send order
@@ -796,6 +859,11 @@ function setupPurchaseForm(){
         setTimeout(() => {
           window.location.assign('/my-orders/');
         }, 2000);
+      } else if(response.status === 401 || response.status === 403) {
+        // Show auth required modal for unauthorized requests
+        $('#modal-purchase').setAttribute('aria-hidden', 'true');
+        showModal('auth-required');
+        status.textContent = '';
       } else {
         const errorText = await response.text();
         throw new Error(errorText || 'Error');

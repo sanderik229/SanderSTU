@@ -825,136 +825,172 @@ class ManagerDashboard {
     }
 
     init() {
-        this.loadManagerProfile();
-        this.loadDashboardData();
-        this.setupEventListeners();
-        this.setupNavigation();
+        console.log('ManagerDashboard init() called');
+        try {
+            this.loadManagerProfile();
+            this.loadDashboardData();
+            this.setupEventListeners();
+            this.setupNavigation();
+            console.log('ManagerDashboard initialization complete');
+        } catch (error) {
+            console.error('Error initializing ManagerDashboard:', error);
+        }
     }
 
     setupEventListeners() {
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            localStorage.clear();
-            window.location.href = '/';
-        });
+        try {
+            // Logout
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    localStorage.clear();
+                    window.location.href = '/';
+                });
+            }
 
-        // Service modal
-        document.getElementById('addServiceBtn').addEventListener('click', () => {
-            this.showServiceModal();
-        });
+            // Service modal
+            const addServiceBtn = document.getElementById('addServiceBtn');
+            if (addServiceBtn) {
+                addServiceBtn.addEventListener('click', () => {
+                    this.showServiceModal();
+                });
+            }
 
-        document.getElementById('cancelServiceBtn').addEventListener('click', () => {
-            document.getElementById('serviceModal').style.display = 'none';
-        });
+            const cancelServiceBtn = document.getElementById('cancelServiceBtn');
+            if (cancelServiceBtn) {
+                cancelServiceBtn.addEventListener('click', () => {
+                    const modal = document.getElementById('serviceModal');
+                    if (modal) modal.style.display = 'none';
+                });
+            }
 
-        document.getElementById('serviceForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.addService();
-        });
+            const serviceForm = document.getElementById('serviceForm');
+            if (serviceForm) {
+                serviceForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addService();
+                });
+            }
 
-        // Order modal
-        document.getElementById('addOrderBtn').addEventListener('click', () => {
-            this.showOrderModal();
-        });
+            // Report modal
+            const generateReportBtn = document.getElementById('generateReportBtn');
+            if (generateReportBtn) {
+                generateReportBtn.addEventListener('click', () => {
+                    this.showReportModal();
+                });
+            }
 
-        document.getElementById('cancelOrderBtn').addEventListener('click', () => {
-            document.getElementById('orderModal').style.display = 'none';
-        });
+            const cancelReportBtn = document.getElementById('cancelReportBtn');
+            if (cancelReportBtn) {
+                cancelReportBtn.addEventListener('click', () => {
+                    const modal = document.getElementById('reportModal');
+                    if (modal) modal.style.display = 'none';
+                });
+            }
 
-        document.getElementById('orderForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.addOrder();
-        });
+            const reportForm = document.getElementById('reportForm');
+            if (reportForm) {
+                reportForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.generateReport();
+                });
+            }
 
-        // Report modal
-        document.getElementById('generateReportBtn').addEventListener('click', () => {
-            this.showReportModal();
-        });
-
-        document.getElementById('cancelReportBtn').addEventListener('click', () => {
-            document.getElementById('reportModal').style.display = 'none';
-        });
-
-        document.getElementById('reportForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.generateReport();
-        });
-
-        // Close modals
-        document.querySelectorAll('.close').forEach(closeBtn => {
-            closeBtn.addEventListener('click', (e) => {
-                e.target.closest('.modal').style.display = 'none';
+            // Close modals
+            document.querySelectorAll('.close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', (e) => {
+                    e.target.closest('.modal').style.display = 'none';
+                });
             });
-        });
 
-        // Filters
-        document.getElementById('statusFilter')?.addEventListener('change', () => {
-            this.loadOrders();
-        });
+            // Filters
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+                statusFilter.addEventListener('change', () => {
+                    this.loadOrders();
+                });
+            }
 
-        // Profile edit modal
-        document.getElementById('editProfileBtn').addEventListener('click', () => {
-            this.showProfileEditModal();
-        });
+            // Profile edit modal
+            const editProfileBtn = document.getElementById('editProfileBtn');
+            if (editProfileBtn) {
+                editProfileBtn.addEventListener('click', () => {
+                    this.showProfileEditModal();
+                });
+            }
 
-        document.getElementById('cancelProfileEditBtn').addEventListener('click', () => {
-            document.getElementById('profileEditModal').style.display = 'none';
-        });
+            const cancelProfileEditBtn = document.getElementById('cancelProfileEditBtn');
+            if (cancelProfileEditBtn) {
+                cancelProfileEditBtn.addEventListener('click', () => {
+                    const modal = document.getElementById('profileEditModal');
+                    if (modal) modal.style.display = 'none';
+                });
+            }
 
-        document.getElementById('profileEditForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.updateProfile();
-        });
+            const profileEditForm = document.getElementById('profileEditForm');
+            if (profileEditForm) {
+                profileEditForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.updateProfile();
+                });
+            }
+            
+            console.log('Event listeners setup complete');
+        } catch (error) {
+            console.error('Error setting up event listeners:', error);
+        }
     }
 
     setupNavigation() {
-        document.querySelectorAll('.nav-item').forEach(item => {
+        console.log('Setting up navigation...');
+        const navItems = document.querySelectorAll('.nav-item');
+        console.log('Found nav items:', navItems.length);
+        
+        navItems.forEach((item, index) => {
+            console.log(`Setting up nav item ${index}:`, item.getAttribute('data-section'));
             item.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log('Nav item clicked:', e.currentTarget);
                 const section = e.currentTarget.getAttribute('data-section');
+                console.log('Switching to section:', section);
                 this.showSection(section);
             });
         });
+        console.log('Navigation setup complete');
     }
 
     showSection(sectionName) {
+        console.log('Switching to section:', sectionName);
+        
         // Hide all sections
         document.querySelectorAll('.content-section').forEach(section => {
             section.classList.remove('active');
         });
+
+        // Show the selected section
+        const sectionElement = document.getElementById(`${sectionName}-section`);
+        if (sectionElement) {
+            sectionElement.classList.add('active');
+            console.log('Section shown:', sectionName);
+        } else {
+            console.error('Section not found:', `${sectionName}-section`);
+        }
 
         // Remove active class from nav items
         document.querySelectorAll('.nav-item').forEach(item => {
             item.classList.remove('active');
         });
 
-        // Load data for the section
-        switch(sectionName) {
-            case 'dashboard':
-                this.loadDashboardData();
-                break;
-            case 'services':
-                this.loadServices();
-                break;
-            case 'bloggers':
-                this.loadBloggers();
-                break;
-            case 'personal-orders':
-                this.loadPersonalOrders();
-                break;
-            case 'reports':
-                this.loadReports();
-                break;
-            case 'profile':
-                this.loadProfile();
-                break;
-        }
+        // Add active class to selected nav item
+        document.querySelectorAll(`.nav-item[data-section="${sectionName}"]`).forEach(item => {
+            item.classList.add('active');
+        });
 
         // Update page title
         const titles = {
             'dashboard': 'Панель менеджера',
             'services': 'Управление услугами',
-            'orders': 'Заказы от блоггеров',
+            'bloggers': 'Мои блоггеры',
             'personal-orders': 'Персональные заказы',
             'reports': 'Отчеты',
             'profile': 'Профиль менеджера'
@@ -963,11 +999,14 @@ class ManagerDashboard {
 
         // Load section data
         switch (sectionName) {
+            case 'dashboard':
+                this.loadDashboardData();
+                break;
             case 'services':
                 this.loadServices();
                 break;
-            case 'orders':
-                this.loadOrders();
+            case 'bloggers':
+                this.loadBloggers();
                 break;
             case 'personal-orders':
                 this.loadPersonalOrders();
@@ -1245,6 +1284,75 @@ class ManagerDashboard {
         return statusMap[status] || status;
     }
 
+    async acceptOrder(orderId) {
+        try {
+            const headers = this.getAuthHeaders();
+            headers['Content-Type'] = 'application/json';
+            
+            const response = await fetch(`/manager/api/orders/${orderId}/accept/`, {
+                method: 'POST',
+                headers: headers
+            });
+            
+            if (response.ok) {
+                this.showNotification('Заказ успешно принят!', 'success');
+                this.loadPersonalOrders();
+            } else {
+                const error = await response.json();
+                this.showNotification(error.error || 'Ошибка при принятии заказа', 'error');
+            }
+        } catch (error) {
+            console.error('Error accepting order:', error);
+            this.showNotification('Ошибка при принятии заказа', 'error');
+        }
+    }
+
+    async rejectOrder(orderId) {
+        try {
+            const headers = this.getAuthHeaders();
+            headers['Content-Type'] = 'application/json';
+            
+            const response = await fetch(`/manager/api/orders/${orderId}/reject/`, {
+                method: 'POST',
+                headers: headers
+            });
+            
+            if (response.ok) {
+                this.showNotification('Заказ отклонен', 'info');
+                this.loadPersonalOrders();
+            } else {
+                const error = await response.json();
+                this.showNotification(error.error || 'Ошибка при отклонении заказа', 'error');
+            }
+        } catch (error) {
+            console.error('Error rejecting order:', error);
+            this.showNotification('Ошибка при отклонении заказа', 'error');
+        }
+    }
+
+    async completeOrder(orderId) {
+        try {
+            const headers = this.getAuthHeaders();
+            headers['Content-Type'] = 'application/json';
+            
+            const response = await fetch(`/manager/api/orders/${orderId}/complete/`, {
+                method: 'POST',
+                headers: headers
+            });
+            
+            if (response.ok) {
+                this.showNotification('Заказ успешно завершен!', 'success');
+                this.loadPersonalOrders();
+            } else {
+                const error = await response.json();
+                this.showNotification(error.error || 'Ошибка при завершении заказа', 'error');
+            }
+        } catch (error) {
+            console.error('Error completing order:', error);
+            this.showNotification('Ошибка при завершении заказа', 'error');
+        }
+    }
+
     async loadReports() {
         try {
             const response = await fetch('/manager/api/reports/', {
@@ -1268,31 +1376,37 @@ class ManagerDashboard {
             return;
         }
 
-        container.innerHTML = reports.map(report => `
+        container.innerHTML = reports.map(report => {
+            const formattedRevenue = typeof report.total_revenue === 'number' 
+                ? report.total_revenue.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+                : report.total_revenue || 0;
+            
+            return `
             <div class="report-card">
                 <div class="report-header">
                     <h4>Отчет за ${report.week_start} - ${report.week_end}</h4>
-                    <span class="report-date">${new Date(report.created_at).toLocaleDateString()}</span>
+                    <span class="report-date">${new Date(report.created_at).toLocaleDateString('ru-RU')}</span>
                 </div>
                 <div class="report-stats">
                     <div class="stat">
                         <span class="stat-label">Заказов:</span>
-                        <span class="stat-value">${report.total_orders}</span>
+                        <span class="stat-value">${report.total_orders || 0}</span>
                     </div>
                     <div class="stat">
                         <span class="stat-label">Выручка:</span>
-                        <span class="stat-value">${report.total_revenue} ₽</span>
+                        <span class="stat-value">${formattedRevenue} ₽</span>
                     </div>
                     <div class="stat">
                         <span class="stat-label">Услуг:</span>
-                        <span class="stat-value">${report.active_services}</span>
+                        <span class="stat-value">${report.active_services || 0}</span>
                     </div>
                 </div>
                 <div class="report-actions">
                     <a href="/manager/reports/${report.id}/pdf/" target="_blank" class="btn primary">Скачать PDF</a>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     async loadProfile() {
@@ -1314,24 +1428,80 @@ class ManagerDashboard {
 
     showServiceModal() {
         document.getElementById('serviceModal').style.display = 'block';
-        this.loadBloggers();
+        this.loadBloggersForSelect();
     }
 
-    async loadBloggers() {
+    async loadBloggersForSelect() {
         try {
-            const response = await fetch('/manager/bloggers/', {
+            const response = await fetch('/manager/api/bloggers/', {
                 headers: this.getAuthHeaders()
             });
             
             if (response.ok) {
                 const bloggers = await response.json();
                 const select = document.getElementById('serviceBlogger');
-                select.innerHTML = '<option value="">Выберите блоггера (обязательно)</option>' +
-                    bloggers.map(blogger => `<option value="${blogger.id}">${blogger.name} (${blogger.social_network})</option>`).join('');
+                if (select) {
+                    select.innerHTML = '<option value="">Выберите блоггера (обязательно)</option>' +
+                        bloggers.map(blogger => `<option value="${blogger.id}">${blogger.name} (${blogger.social_network})</option>`).join('');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading bloggers for select:', error);
+        }
+    }
+
+    async loadBloggers() {
+        try {
+            console.log('Loading bloggers...');
+            const response = await fetch('/manager/api/bloggers/', {
+                headers: this.getAuthHeaders()
+            });
+            
+            console.log('Bloggers response status:', response.status);
+            if (response.ok) {
+                const bloggers = await response.json();
+                console.log('Bloggers data:', bloggers);
+                this.renderBloggers(bloggers);
+            } else {
+                console.error('Bloggers request failed:', response.status);
             }
         } catch (error) {
             console.error('Error loading bloggers:', error);
+            this.showNotification('Ошибка при загрузке блоггеров', 'error');
         }
+    }
+
+    renderBloggers(bloggers) {
+        const container = document.getElementById('bloggersList');
+        
+        if (bloggers.length === 0) {
+            container.innerHTML = '<div class="no-data">Нет блоггеров</div>';
+            return;
+        }
+
+        container.innerHTML = bloggers.map(blogger => `
+            <div class="blogger-card">
+                <div class="blogger-header">
+                    <h4>${blogger.name}</h4>
+                    <span class="social-badge">${this.getSocialDisplay(blogger.social_network)}</span>
+                </div>
+                <div class="blogger-details">
+                    <p><strong>Тема:</strong> ${blogger.topic || 'Не указана'}</p>
+                    <p><strong>Аудитория:</strong> ${blogger.audience_size || 0} подписчиков</p>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    getSocialDisplay(social) {
+        const socialMap = {
+            'instagram': '📷 Instagram',
+            'youtube': '▶️ YouTube',
+            'tiktok': '🎵 TikTok',
+            'telegram': '✈️ Telegram',
+            'vk': '🔵 VKontakte'
+        };
+        return socialMap[social] || social;
     }
 
     async addService() {
@@ -1378,15 +1548,17 @@ class ManagerDashboard {
 
     async loadBloggersForOrder() {
         try {
-            const response = await fetch('/manager/bloggers/', {
+            const response = await fetch('/manager/api/bloggers/', {
                 headers: this.getAuthHeaders()
             });
             
             if (response.ok) {
                 const bloggers = await response.json();
                 const select = document.getElementById('orderBlogger');
-                select.innerHTML = '<option value="">Выберите блоггера</option>' +
-                    bloggers.map(blogger => `<option value="${blogger.id}">${blogger.name} (${blogger.social_network})</option>`).join('');
+                if (select) {
+                    select.innerHTML = '<option value="">Выберите блоггера</option>' +
+                        bloggers.map(blogger => `<option value="${blogger.id}">${blogger.name} (${blogger.social_network})</option>`).join('');
+                }
             }
         } catch (error) {
             console.error('Error loading bloggers for order:', error);
@@ -1446,9 +1618,12 @@ class ManagerDashboard {
                 week_end: document.getElementById('reportWeekEnd').value
             };
 
+            const headers = this.getAuthHeaders();
+            headers['Content-Type'] = 'application/json';
+
             const response = await fetch('/manager/api/reports/generate_report/', {
                 method: 'POST',
-                headers: this.getAuthHeaders(),
+                headers: headers,
                 body: JSON.stringify(formData)
             });
 
@@ -1456,6 +1631,9 @@ class ManagerDashboard {
                 document.getElementById('reportModal').style.display = 'none';
                 this.loadReports();
                 this.showNotification('Отчет сгенерирован!', 'success');
+            } else {
+                const errorData = await response.json();
+                this.showNotification(errorData.error || 'Ошибка при генерации отчета', 'error');
             }
         } catch (error) {
             console.error('Error generating report:', error);
@@ -1502,63 +1680,6 @@ class ManagerDashboard {
         setTimeout(() => {
             notification.remove();
         }, 3000);
-    }
-
-    async loadBloggers() {
-        try {
-            console.log('Loading bloggers...');
-            const response = await fetch('/manager/api/bloggers/', {
-                headers: this.getAuthHeaders()
-            });
-
-            console.log('Bloggers response status:', response.status);
-            if (response.ok) {
-                const bloggers = await response.json();
-                console.log('Bloggers data:', bloggers);
-                this.displayBloggers(bloggers);
-            } else {
-                console.error('Bloggers request failed:', response.status);
-            }
-        } catch (error) {
-            console.error('Error loading bloggers:', error);
-            this.showNotification('Ошибка при загрузке блоггеров', 'error');
-        }
-    }
-
-    displayBloggers(bloggers) {
-        const container = document.getElementById('bloggersList');
-        
-        if (bloggers.length === 0) {
-            container.innerHTML = '<div class="no-data">У вас нет курируемых блоггеров</div>';
-            return;
-        }
-
-        container.innerHTML = bloggers.map(blogger => `
-            <div class="blogger-card">
-                <div class="blogger-info">
-                    <h3>${blogger.name}</h3>
-                    <p><strong>Соцсеть:</strong> ${blogger.social_network}</p>
-                    <p><strong>Тема:</strong> ${blogger.topic}</p>
-                    <p><strong>Аудитория:</strong> ${blogger.audience_size.toLocaleString()} подписчиков</p>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    async loadProfile() {
-        try {
-            const response = await fetch('/manager/api/profile/', {
-                headers: this.getAuthHeaders()
-            });
-            
-            if (response.ok) {
-                const profile = await response.json();
-                this.displayProfile(profile);
-            }
-        } catch (error) {
-            console.error('Error loading profile:', error);
-            this.showNotification('Ошибка при загрузке профиля', 'error');
-        }
     }
 
     displayProfile(profile) {

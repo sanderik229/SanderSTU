@@ -8,20 +8,13 @@ from ads.models import Order
 from bloggers.models import AdOffer
 from django.db.models import Count, Sum, Avg
 from datetime import datetime, timedelta
+from django.utils import timezone
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 import csv
 import io
 import json
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-import os
+# reportlab импортируется локально в функции generate_monthly_report
 
 
 @api_view(['GET'])
@@ -37,42 +30,68 @@ def admin_stats(request):
         total_orders = Order.objects.count()
         
         # Revenue from paid orders (both from offer prices and payment amounts)
-        total_revenue_from_offers = Order.objects.filter(
-            offer__isnull=False,
-            status='paid'
-        ).aggregate(total=Sum('offer__price'))['total'] or 0
+        try:
+            total_revenue_from_offers = sum(
+                float(order.offer.price) for order in Order.objects.filter(
+                    offer__isnull=False,
+                    status='paid'
+                ).select_related('offer') if order.offer
+            )
+        except:
+            total_revenue_from_offers = 0
         
-        total_revenue_from_payments = Order.objects.filter(
-            payment_status='paid'
-        ).aggregate(total=Sum('payment_amount'))['total'] or 0
+        try:
+            total_revenue_from_payments = Order.objects.filter(
+                payment_status='paid'
+            ).aggregate(total=Sum('payment_amount'))['total']
+            total_revenue_from_payments = float(total_revenue_from_payments) if total_revenue_from_payments else 0
+        except:
+            total_revenue_from_payments = 0
         
         total_revenue = total_revenue_from_offers + total_revenue_from_payments
         
         # Monthly stats
-        month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         monthly_orders = Order.objects.filter(created_at__gte=month_start).count()
         
         # Active users (users with orders in last 30 days)
-        thirty_days_ago = datetime.now() - timedelta(days=30)
+        thirty_days_ago = timezone.now() - timedelta(days=30)
         active_users = User.objects.filter(
-            orders__created_at__gte=thirty_days_ago
+            ads_orders__created_at__gte=thirty_days_ago
         ).distinct().count()
         
-        # Average order value
-        avg_order = Order.objects.aggregate(
-            avg=Avg('offer__price')
-        )['avg'] or 0
+        # Average order value (use payment_amount for personal orders and offer price for offer orders)
+        paid_orders = Order.objects.filter(payment_status='paid')
+        total_value = sum(
+            order.payment_amount or 0 if order.order_type == 'personal' 
+            else order.offer.price if order.offer else 0 
+            for order in paid_orders
+        )
+        avg_order = float(total_value / paid_orders.count()) if paid_orders.count() > 0 else 0
 
-        return Response({
-            'totalRevenue': float(total_revenue),
-            'monthlyOrders': monthly_orders,
-            'activeUsers': active_users,
-            'averageOrder': float(avg_order),
-            'totalOrders': total_orders
-        })
+        # Return response
+        result = {
+            'totalRevenue': float(total_revenue or 0),
+            'monthlyOrders': monthly_orders or 0,
+            'activeUsers': active_users or 0,
+            'averageOrder': float(avg_order or 0),
+            'totalOrders': total_orders or 0
+        }
+        
+        return Response(result)
         
     except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"Error in admin_stats: {e}")
+        import traceback
+        traceback.print_exc()
+        # Return safe defaults to prevent infinite reload
+        return Response({
+            'totalRevenue': 0,
+            'monthlyOrders': 0,
+            'activeUsers': 0,
+            'averageOrder': 0,
+            'totalOrders': 0
+        })
 
 
 @api_view(['GET'])
@@ -380,22 +399,35 @@ def export_services_csv(request):
 def generate_monthly_report(request):
     """Generate monthly PDF report with Russian language support"""
     try:
+        # Import reportlab locally
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib import colors
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        import os
+        
         # Check if user is admin
         if not (request.user.is_staff or getattr(request.user.profile, 'role', 'user') == 'admin'):
             return Response({'detail': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
 
         # Get current month data
-        now = datetime.now()
+        now = timezone.now()
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         
         # Calculate stats
-        monthly_orders = Order.objects.filter(created_at__gte=month_start)
+        monthly_orders = Order.objects.filter(created_at__gte=month_start).select_related('offer')
         
         # Revenue from paid orders (both from offer prices and payment amounts)
-        monthly_revenue_from_offers = monthly_orders.filter(
-            offer__isnull=False,
-            status='paid'
-        ).aggregate(total=Sum('offer__price'))['total'] or 0
+        monthly_revenue_from_offers = sum(
+            order.offer.price for order in monthly_orders.filter(
+                offer__isnull=False,
+                status='paid'
+            ) if order.offer
+        ) or 0
         
         monthly_revenue_from_payments = monthly_orders.filter(
             payment_status='paid'
@@ -405,11 +437,15 @@ def generate_monthly_report(request):
         orders_count = monthly_orders.count()
         average_order = float(total_revenue / orders_count) if orders_count > 0 else 0
         
-        # Get top services
-        top_services = monthly_orders.values('offer__title').annotate(
-            count=Count('id'),
-            revenue=Sum('offer__price')
-        ).order_by('-count')[:5]
+        # Get top services - simplified version
+        top_services = []
+        for order in monthly_orders[:5]:
+            if order.offer:
+                top_services.append({
+                    'title': order.offer.title,
+                    'count': 1,
+                    'revenue': float(order.offer.price)
+                })
         
         # Create PDF buffer
         buffer = io.BytesIO()

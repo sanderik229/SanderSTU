@@ -308,4 +308,63 @@ html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,Segoe U
     cursor: not-allowed;
 }
 
+/* Auth Required Modal */
+.auth-required-modal .modal-dialog {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.auth-required-content {
+    padding: 40px 30px;
+    text-align: center;
+}
+
+.auth-required-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.auth-required-content h2 {
+    margin: 0 0 16px 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.auth-required-text {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 500;
+}
+
+.auth-required-subtext {
+    margin: 0 0 32px 0;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.auth-required-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.auth-required-actions .btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
 

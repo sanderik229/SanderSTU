@@ -6,6 +6,7 @@ class Profile(models.Model):
     ROLE_CHOICES = (
         ("user", "User"),
         ("admin", "Admin"),
+        ("manager", "Manager"),
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     full_name = models.CharField(max_length=200)

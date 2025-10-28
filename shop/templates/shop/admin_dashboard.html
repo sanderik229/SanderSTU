@@ -423,25 +423,11 @@
 // Проверяем авторизацию при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
     const token = localStorage.getItem('access');
-    if (token) {
-        // Отправляем токен в заголовке для middleware
-        fetch(window.location.href, {
-            method: 'GET',
-            headers: {
-                'X-Access-Token': token
-            }
-        }).then(response => {
-            if (response.ok) {
-                // Токен валиден, обновляем страницу
-                window.location.reload();
-            }
-        }).catch(error => {
-            console.error('Ошибка проверки токена:', error);
-        });
-    } else {
+    if (!token) {
         // Нет токена, перенаправляем на главную
         window.location.href = '/';
     }
+    // Токен есть, не делаем перезагрузку - страница уже загружена
 });
 
 // Global modal functions
