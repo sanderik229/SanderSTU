@@ -1,0 +1,150 @@
+@startuml ER Diagram SanderStu
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam roundcorner 20
+skinparam linetype ortho
+
+entity "User" as user {
+  * username : VARCHAR
+  * email : VARCHAR
+  password : VARCHAR
+  first_name : VARCHAR
+  last_name : VARCHAR
+  * is_staff : BOOLEAN
+  * is_superuser : BOOLEAN
+  date_joined : DATETIME
+}
+
+entity "Profile" as profile {
+  * full_name : VARCHAR(200)
+  birth_year : INTEGER
+  * role : VARCHAR(20)
+  card_last4 : VARCHAR(4)
+}
+
+entity "Manager" as manager {
+  * phone : VARCHAR(20)
+  department : VARCHAR(100)
+  * hire_date : DATE
+  * is_active : BOOLEAN
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "Blogger" as blogger {
+  * name : VARCHAR(200)
+  * social_network : VARCHAR(30)
+  topic : VARCHAR(120)
+  * audience_size : INTEGER
+}
+
+entity "AdOffer" as adoffer {
+  * title : VARCHAR(200)
+  description : TEXT
+  * price : DECIMAL(10,2)
+  * social_network : VARCHAR(30)
+  * is_active : BOOLEAN
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "AdService" as adservice {
+  * name : VARCHAR(200)
+  * social_network : VARCHAR(20)
+  * price : DECIMAL(10,2)
+  * description : TEXT
+  * is_active : BOOLEAN
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "Order" as order {
+  * order_type : VARCHAR(20)
+  * status : VARCHAR(20)
+  * payment_status : VARCHAR(20)
+  payment_amount : DECIMAL(10,2)
+  payment_date : DATETIME
+  full_name : VARCHAR(200)
+  email : VARCHAR(255)
+  phone : VARCHAR(40)
+  ad_type : VARCHAR(50)
+  budget : DECIMAL(10,2)
+  description : TEXT
+  created_at : DATETIME
+}
+
+entity "ManagerOrder" as managerorder {
+  * order_type : VARCHAR(20)
+  * status : VARCHAR(20)
+  client_name : VARCHAR(200)
+  client_email : VARCHAR(255)
+  client_phone : VARCHAR(20)
+  service_description : TEXT
+  budget : DECIMAL(10,2)
+  created_at : DATETIME
+  updated_at : DATETIME
+}
+
+entity "Review" as review {
+  * rating : SMALLINT
+  * text : TEXT
+  created_at : DATETIME
+}
+
+entity "WeeklyReport" as weeklyreport {
+  * week_start : DATE
+  * week_end : DATE
+  * total_orders : INTEGER
+  * total_revenue : DECIMAL(12,2)
+  * active_services : INTEGER
+  pdf_file : FILE
+  created_at : DATETIME
+}
+
+entity "Notification" as notification {
+  * notification_type : VARCHAR(20)
+  * title : VARCHAR(200)
+  * message : TEXT
+  * is_read : BOOLEAN
+  created_at : DATETIME
+}
+
+entity "Transaction" as transaction {
+  * amount : DECIMAL(10,2)
+  * type : VARCHAR(20)
+  payload : JSON
+  created_at : DATETIME
+}
+
+' Relationships
+user ||--|| profile : has
+user ||--o| manager : has
+user ||--o{ order : places
+user ||--o{ review : writes
+user ||--o{ transaction : makes
+
+manager ||--o{ blogger : manages
+manager ||--o{ adservice : creates
+manager ||--o{ managerorder : handles
+manager ||--o{ weeklyreport : generates
+manager ||--o{ notification : receives
+
+blogger ||--o{ adoffer : offers
+blogger ||--o{ adservice : has
+blogger ||--o{ review : receives
+
+adoffer ||--o{ order : generates
+adoffer ||--o{ review : has
+
+adservice ||--|| blogger : belongs_to
+adservice ||--|| manager : created_by
+
+order ||--o{ managerorder : creates
+order ||--o{ transaction : has
+order ||--o| adoffer : references
+
+transaction ||--|| order : belongs_to
+transaction ||--|| user : made_by
+
+@enduml
+

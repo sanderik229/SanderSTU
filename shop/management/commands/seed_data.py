@@ -2,6 +2,8 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from shop.models import Category, Ad, Package, Order, Review
+from bloggers.models import Blogger, AdOffer
+from managers.models import Manager
 
 
 class Command(BaseCommand):
@@ -83,7 +85,69 @@ class Command(BaseCommand):
             Review.objects.get_or_create(user_name="Анна", rating=5, text="Трафик вырос на 35%.", ad=ad1)
             Review.objects.get_or_create(user_name="Игорь", rating=4, text="Прозрачные метрики и отчёты.", ad=ad1)
 
-        self.stdout.write(self.style.SUCCESS("Seed completed"))
+        # Add bloggers
+        self.stdout.write("\nСоздание блоггеров...")
+        
+        bloggers_data = [
+            {
+                "name": "Иван Петров",
+                "social_network": "instagram",
+                "topic": "Фотография и путешествия",
+                "audience_size": 125000
+            },
+            {
+                "name": "Мария Соколова",
+                "social_network": "youtube",
+                "topic": "Кулинария",
+                "audience_size": 250000
+            },
+            {
+                "name": "Дмитрий Волков",
+                "social_network": "tiktok",
+                "topic": "Юмор и развлечения",
+                "audience_size": 500000
+            },
+            {
+                "name": "Анна Мельникова",
+                "social_network": "instagram",
+                "topic": "Мода и стиль",
+                "audience_size": 180000
+            },
+            {
+                "name": "Сергей Новиков",
+                "social_network": "youtube",
+                "topic": "Технологии и обзоры",
+                "audience_size": 350000
+            },
+            {
+                "name": "Елена Сидорова",
+                "social_network": "telegram",
+                "topic": "Образование и курсы",
+                "audience_size": 95000
+            }
+        ]
+        
+        # Создаем или получаем менеджера для блоггеров
+        manager = Manager.objects.first()
+        if not manager:
+            self.stdout.write("Создайте менеджера сначала")
+        else:
+            for blogger_info in bloggers_data:
+                blogger, created = Blogger.objects.get_or_create(
+                    name=blogger_info["name"],
+                    defaults={
+                        "social_network": blogger_info["social_network"],
+                        "topic": blogger_info["topic"],
+                        "audience_size": blogger_info["audience_size"],
+                        "manager": manager if manager else None
+                    }
+                )
+                if created:
+                    self.stdout.write(f"   ✓ Создан блоггер: {blogger.name}")
+            
+            self.stdout.write(self.style.SUCCESS(f"   ✓ Создано {len(bloggers_data)} блоггеров"))
+
+        self.stdout.write(self.style.SUCCESS("\nSeed completed"))
         self.stdout.write(f"Test user: {test_email} / {test_password}; token: {test_token.key}")
         self.stdout.write(f"Admin user: {admin_email} / {admin_password}; token: {admin_token.key}")
 

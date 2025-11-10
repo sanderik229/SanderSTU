@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SanderStu - Системные диаграммы</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .tab-button {
+            background: white;
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .tab-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        
+        .tab-button.active {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .diagram-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            min-height: 600px;
+            display: none;
+        }
+        
+        .diagram-container.active {
+            display: block;
+        }
+        
+        .diagram-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .diagram-description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .mermaid {
+            text-align: center;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 SanderStu - Системные диаграммы</h1>
+            <p>Интерактивная документация системы управления рекламой</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="showDiagram('architecture')">Архитектура</button>
+            <button class="tab-button" onclick="showDiagram('er')">ER-диаграмма</button>
+            <button class="tab-button" onclick="showDiagram('class')">Диаграмма классов</button>
+            <button class="tab-button" onclick="showDiagram('flow')">Потоки данных</button>
+        </div>
+        
+        <div id="architecture" class="diagram-container active">
+            <h2 class="diagram-title">Структурная схема системы</h2>
+            <p class="diagram-description">
+                Архитектура SanderStu включает Frontend Layer, Authentication Layer, API Layer, 
+                Application Layer, Data Layer и Services Layer
+            </p>
+            <div class="mermaid">
+graph TB
+    subgraph "Frontend Layer"
+        A[Главная страница<br/>home.html]
+        B[Каталог рекламы<br/>buy.html]
+        C[Заказ рекламы<br/>order.html]
+        D[Профиль<br/>profile.html]
+        E[Мои заказы<br/>my_orders.html]
+        F[Админ панель<br/>admin_dashboard.html]
+        G[Менеджер панель<br/>dashboard.html]
+    end
+
+    subgraph "Authentication Layer"
+        H[Login Modal]
+        I[Registration Modal]
+        J[JWT Authentication]
+    end
+
+    subgraph "API Layer"
+        K["/api/v2/offers/"]
+        L["/api/v2/orders/"]
+        M["/api/v2/auth/"]
+        N["/api/v2/me/"]
+        O["/admin/..."]
+        P["/manager/api/..."]
+    end
+
+    subgraph "Application Layer"
+        Q[Django REST Framework]
+        R[JWT Middleware]
+        S[Manager Middleware]
+    end
+
+    subgraph "Business Logic Layer"
+        T[Views]
+        U[Serializers]
+        V[Permissions]
+    end
+
+    subgraph "Data Layer"
+        W[Models]
+        X[PostgreSQL Database]
+        Y[Media Files]
+        Z[Static Files]
+    end
+
+    subgraph "Services Layer"
+        AA[Seed Data Service]
+        BB[Report Generation]
+        CC[PDF Export]
+    end
+
+    A --> H
+    A --> I
+    H --> J
+    I --> J
+    
+    B --> K
+    C --> L
+    A --> N
+    F --> O
+    G --> P
+    
+    K --> Q
+    L --> Q
+    M --> Q
+    N --> Q
+    O --> R
+    P --> S
+    
+    Q --> T
+    T --> U
+    T --> V
+    V --> W
+    
+    W --> X
+    W --> Y
+    W --> Z
+    
+    T --> AA
+    T --> BB
+    T --> CC
+            </div>
+        </div>
+        
+        <div id="er" class="diagram-container">
+            <h2 class="diagram-title">ER-диаграмма (Логическая модель)</h2>
+            <p class="diagram-description">
+                Entity-Relationship диаграмма показывает все сущности системы и связи между ними
+            </p>
+            <div class="mermaid">
+erDiagram
+    User ||--o{ Profile : has
+    User ||--o{ Manager : has
+    User ||--o{ Order : places
+    User ||--o{ Review : writes
+    User ||--o{ Transaction : makes
+    
+    Profile ||--|| User : belongs_to
+    
+    Manager ||--o{ Blogger : manages
+    Manager ||--o{ AdService : creates
+    Manager ||--o{ ManagerOrder : handles
+    Manager ||--o{ WeeklyReport : generates
+    Manager ||--o{ Notification : receives
+    
+    Blogger ||--o{ AdOffer : offers
+    Blogger ||--o{ AdService : has
+    Blogger ||--o{ Review : receives
+    
+    AdOffer ||--o{ Order : generates
+    AdOffer ||--o{ Review : has
+    
+    AdService ||--|| Blogger : belongs_to
+    AdService ||--|| Manager : created_by
+    
+    Order ||--o| ManagerOrder : may_create
+    Order ||--o{ Transaction : has
+    Order ||--o| AdOffer : references
+    
+    ManagerOrder ||--|| Manager : assigned_to
+    
+    WeeklyReport ||--|| Manager : belongs_to
+    
+    Notification ||--|| Manager : belongs_to
+    
+    Transaction ||--|| Order : belongs_to
+    Transaction ||--|| User : made_by
+    
+    Review ||--|| User : written_by
+    Review ||--|| Blogger : about
+    Review ||--o| AdOffer : references
+            </div>
+        </div>
+        
+        <div id="class" class="diagram-container">
+            <h2 class="diagram-title">Диаграмма классов</h2>
+            <p class="diagram-description">
+                Основные классы системы и их атрибуты, методы и отношения
+            </p>
+            <div class="mermaid">
+classDiagram
+    class User {
+        +String username
+        +String email
+        +String first_name
+        +String last_name
+        +Boolean is_staff
+        +Boolean is_superuser
+        +DateTime date_joined
+    }
+
+    class Profile {
+        +String full_name
+        +Integer birth_year
+        +String role
+        +String card_last4
+        +User user
+    }
+
+    class Manager {
+        +String phone
+        +String department
+        +Date hire_date
+        +Boolean is_active
+        +User user
+    }
+
+    class Blogger {
+        +String name
+        +String social_network
+        +String topic
+        +Integer audience_size
+        +Manager manager
+    }
+
+    class AdOffer {
+        +String title
+        +String description
+        +Decimal price
+        +String social_network
+        +Boolean is_active
+        +DateTime created_at
+        +Blogger blogger
+    }
+
+    class AdService {
+        +String name
+        +String social_network
+        +Decimal price
+        +String description
+        +Boolean is_active
+        +Blogger blogger
+        +Manager manager
+    }
+
+    class Order {
+        +String order_type
+        +String status
+        +String payment_status
+        +Decimal payment_amount
+        +User user
+        +AdOffer offer
+    }
+
+    class ManagerOrder {
+        +String order_type
+        +String status
+        +String client_name
+        +String client_email
+        +String service_description
+        +Decimal budget
+        +Manager manager
+        +Order blogger_order
+    }
+
+    class Review {
+        +Integer rating
+        +String text
+        +DateTime created_at
+        +User user
+        +Blogger blogger
+        +AdOffer offer
+    }
+
+    class WeeklyReport {
+        +Date week_start
+        +Date week_end
+        +Integer total_orders
+        +Decimal total_revenue
+        +Integer active_services
+        +File pdf_file
+        +Manager manager
+    }
+
+    User ||--|| Profile : has
+    User ||--o| Manager : has
+    Manager ||--o{ Blogger : manages
+    Blogger ||--o{ AdOffer : has
+    Manager ||--o{ AdService : creates
+    Blogger ||--o{ AdService : has
+    Manager ||--o{ ManagerOrder : manages
+    User ||--o{ Order : makes
+    AdOffer ||--o{ Order : generates
+    Order ||--o{ ManagerOrder : creates
+    AdOffer ||--o{ Review : has
+    Blogger ||--o{ Review : receives
+    Manager ||--o{ WeeklyReport : generates
+            </div>
+        </div>
+        
+        <div id="flow" class="diagram-container">
+            <h2 class="diagram-title">Потоки данных в системе</h2>
+            <p class="diagram-description">
+                Последовательность действий при заказе рекламы и обработке заказов
+            </p>
+            <div class="mermaid">
+sequenceDiagram
+    participant U as Пользователь
+    participant F as Frontend
+    participant API as API Layer
+    participant M as Models
+    participant DB as PostgreSQL
+    participant MG as Менеджер
+    participant ADM as Администратор
+
+    Note over U,DB: Заказ рекламы (Поток 1)
+    U->>F: Открывает каталог
+    F->>API: GET /api/v2/offers/
+    API->>M: AdOffer.objects.all()
+    M->>DB: SELECT * FROM bloggers_adoffer
+    DB-->>M: Данные
+    M-->>API: JSON
+    API-->>F: Предложения
+    F-->>U: Отображает каталог
+    
+    U->>F: Нажимает "Заказать"
+    F->>API: POST /api/v2/orders/
+    API->>M: Order.objects.create()
+    M->>DB: INSERT INTO ads_order
+    M->>DB: INSERT INTO managers_managerorder
+    DB-->>M: OK
+    M-->>API: Order created
+    API-->>F: Success
+    F-->>U: Заказ создан
+
+    Note over MG,DB: Обработка заказа (Поток 2)
+    MG->>F: Открывает панель менеджера
+    F->>API: GET /manager/api/orders/personal_orders/
+    API->>M: ManagerOrder.objects.filter(manager=user)
+    M->>DB: SELECT с JOIN
+    DB-->>M: Заказы
+    M-->>API: JSON
+    API-->>F: Список заказов
+    F-->>U: Отображает заказы
+    
+    MG->>F: Нажимает "Принять"
+    F->>API: POST /manager/api/orders/1/accept/
+    API->>M: status = 'accepted'
+    M->>DB: UPDATE managers_managerorder
+    DB-->>M: OK
+    M-->>API: Success
+    API-->>F: OK
+    F-->>U: Заказ принят
+
+    Note over ADM,DB: Администрирование (Поток 3)
+    ADM->>F: Открывает админ панель
+    F->>API: GET /api/v2/admin/stats/
+    API->>M: Вычисление статистики
+    M->>DB: Сложные запросы
+    DB-->>M: Данные
+    M-->>API: Статистика
+    API-->>F: JSON
+    F-->>ADM: Отображает статистику
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 SanderStu - Система управления рекламой</p>
+        </footer>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose'
+        });
+        
+        function showDiagram(diagramId) {
+            // Скрыть все диаграммы
+            const containers = document.querySelectorAll('.diagram-container');
+            containers.forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            // Показать выбранную диаграмму
+            document.getElementById(diagramId).classList.add('active');
+            
+            // Обновить активную кнопку
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Перерисовать диаграмму
+            setTimeout(() => {
+                mermaid.init(undefined, document.querySelector('#' + diagramId + ' .mermaid'));
+            }, 100);
+        }
+    </script>
+</body>
+</html>

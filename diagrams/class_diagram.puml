@@ -1,0 +1,206 @@
+@startuml SanderStu Class Diagram
+!theme cerulean
+skinparam classAttributeIconSize 0
+skinparam backgroundColor #FFFFFF
+skinparam monochrome false
+
+package "User Management" {
+  class User {
+    + String username
+    + String email
+    + String first_name
+    + String last_name
+    + Boolean is_staff
+    + Boolean is_superuser
+    + DateTime date_joined
+    + __str__()
+  }
+  
+  class Profile {
+    + String full_name
+    + Integer birth_year
+    + String role
+    + String card_last4
+    + __str__()
+  }
+  
+  class Manager {
+    + String phone
+    + String department
+    + Date hire_date
+    + Boolean is_active
+    + DateTime created_at
+    + DateTime updated_at
+    + active_orders_count()
+    + managed_bloggers_count()
+    + __str__()
+  }
+  
+  User "1" ||--|| "1" Profile
+  User "1" ||--o| "1" Manager
+}
+
+package "Content Management" {
+  class Blogger {
+    + String name
+    + String social_network
+    + String topic
+    + Integer audience_size
+    + __str__()
+  }
+  
+  class AdOffer {
+    + String title
+    + String description
+    + Decimal price
+    + String social_network
+    + Boolean is_active
+    + DateTime created_at
+    + DateTime updated_at
+    + __str__()
+  }
+  
+  class AdService {
+    + String name
+    + String social_network
+    + Decimal price
+    + String description
+    + Boolean is_active
+    + DateTime created_at
+    + DateTime updated_at
+    + __str__()
+  }
+  
+  class Review {
+    + Integer rating
+    + String text
+    + DateTime created_at
+    + __str__()
+  }
+  
+  Manager "1" ||--o{ "N" Blogger : manages
+  Blogger "1" ||--o{ "N" AdOffer : offers
+  Blogger "1" ||--o{ "N" AdService : has
+  Manager "1" ||--o{ "N" AdService : creates
+  AdOffer "1" ||--o{ "N" Review : has
+  Blogger "1" ||--o{ "N" Review : receives
+}
+
+package "Order Management" {
+  class Order {
+    + String order_type
+    + String status
+    + String payment_status
+    + Decimal payment_amount
+    + DateTime payment_date
+    + String full_name
+    + String email
+    + String phone
+    + String ad_type
+    + Decimal budget
+    + String description
+    + DateTime created_at
+    + __str__()
+  }
+  
+  class ManagerOrder {
+    + String order_type
+    + String status
+    + String client_name
+    + String client_email
+    + String client_phone
+    + String service_description
+    + Decimal budget
+    + DateTime created_at
+    + DateTime updated_at
+    + __str__()
+  }
+  
+  class Transaction {
+    + Decimal amount
+    + String type
+    + Dict payload
+    + DateTime created_at
+    + __str__()
+  }
+  
+  User "1" ||--o{ "N" Order : places
+  AdOffer "1" ||--o{ "N" Order : generates
+  Order "1" ||--o{ "N" ManagerOrder : creates
+  Order "1" ||--o{ "N" Transaction : has
+  Manager "1" ||--o{ "N" ManagerOrder : handles
+  User "1" ||--o{ "N" Transaction : makes
+}
+
+package "Reporting" {
+  class WeeklyReport {
+    + Date week_start
+    + Date week_end
+    + Integer total_orders
+    + Decimal total_revenue
+    + Integer active_services
+    + File pdf_file
+    + DateTime created_at
+    + __str__()
+  }
+  
+  class Notification {
+    + String notification_type
+    + String title
+    + String message
+    + Boolean is_read
+    + DateTime created_at
+    + __str__()
+  }
+  
+  Manager "1" ||--o{ "N" WeeklyReport : generates
+  Manager "1" ||--o{ "N" Notification : receives
+}
+
+package "Shop" {
+  class Category {
+    + String name
+    + String slug
+    + DateTime created_at
+    + DateTime updated_at
+    + __str__()
+  }
+  
+  class Ad {
+    + String title
+    + String description
+    + Decimal price
+    + Integer popularity
+    + String image
+    + Boolean is_active
+    + DateTime created_at
+    + DateTime updated_at
+    + __str__()
+  }
+  
+  class Package {
+    + String name
+    + String description
+    + Decimal price
+    + Boolean is_active
+    + DateTime created_at
+    + DateTime updated_at
+    + __str__()
+  }
+  
+  Category "1" ||--o{ "N" Ad : contains
+}
+
+package "Relations" {
+  Review "N" ||--|| "1" User : written_by
+  Review "N" ||--|| "1" Blogger : about
+  Review "N" ||--o| "1" AdOffer : references
+  
+  Transaction "N" ||--|| "1" Order : belongs_to
+  Transaction "N" ||--|| "1" User : made_by
+  
+  ManagerOrder "N" ||--o| "1" Order : linked_to
+}
+
+@enduml
+

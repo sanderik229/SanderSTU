@@ -4,8 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
-from managers.models import Manager, AdService, ManagerOrder
+from managers.models import Manager, AdService, ManagerOrder, WeeklyReport
 from bloggers.models import Blogger
+from datetime import datetime, timedelta
 import json
 
 User = get_user_model()
@@ -164,5 +165,220 @@ def manager_create_service_api(request):
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def manager_reports_api(request):
+    """API для получения отчетов менеджера"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    manager = request.user.manager_profile
+    reports = WeeklyReport.objects.filter(manager=manager).order_by('-created_at')
+    
+    reports_data = [{
+        'id': report.id,
+        'week_start': str(report.week_start),
+        'week_end': str(report.week_end),
+        'total_orders': report.total_orders,
+        'total_revenue': float(report.total_revenue),
+        'active_services': report.active_services,
+        'created_at': report.created_at.isoformat() if report.created_at else None
+    } for report in reports]
+
+    return Response(reports_data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def generate_report_api(request):
+    """API для генерации отчета"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        manager = request.user.manager_profile
+        
+        week_start = request.data.get('week_start')
+        week_end = request.data.get('week_end')
+        
+        if not week_start or not week_end:
+            return Response({'error': 'Необходимо указать даты начала и конца недели'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Получаем или создаем отчет
+        report, created = WeeklyReport.objects.get_or_create(
+            manager=manager,
+            week_start=week_start,
+            week_end=week_end,
+            defaults={
+                'total_orders': 0,
+                'total_revenue': 0,
+                'active_services': 0
+            }
+        )
+        
+        # Подсчитываем статистику
+        from django.db.models import Count, Sum
+        
+        # Подсчет заказов за период
+        orders = ManagerOrder.objects.filter(
+            manager=manager,
+            created_at__date__gte=week_start,
+            created_at__date__lte=week_end
+        )
+        
+        report.total_orders = orders.count()
+        report.total_revenue = sum(order.budget or 0 for order in orders)
+        
+        # Подсчет активных услуг
+        report.active_services = AdService.objects.filter(
+            manager=manager,
+            is_active=True
+        ).count()
+        
+        report.save()
+        
+        # Возвращаем данные отчета
+        report_data = {
+            'id': report.id,
+            'week_start': str(report.week_start),
+            'week_end': str(report.week_end),
+            'total_orders': report.total_orders,
+            'total_revenue': float(report.total_revenue),
+            'active_services': report.active_services,
+            'created_at': report.created_at.isoformat() if report.created_at else None
+        }
+        
+        return Response(report_data, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        print(f"Error in generate_report_api: {e}")
+        import traceback
+        traceback.print_exc()
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def manager_personal_orders_api(request):
+    """API для получения персональных заказов менеджера"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    manager = request.user.manager_profile
+    orders = ManagerOrder.objects.filter(
+        manager=manager,
+        order_type='personal'
+    ).order_by('-created_at')
+    
+    orders_data = [{
+        'id': order.id,
+        'client_name': order.client_name or 'Не указано',
+        'client_email': order.client_email or 'Не указано',
+        'client_phone': order.client_phone or 'Не указано',
+        'service_description': order.service_description or 'Не указано',
+        'budget': float(order.budget) if order.budget else 0,
+        'status': order.status,
+        'created_at': order.created_at.isoformat() if hasattr(order.created_at, 'isoformat') else str(order.created_at)
+    } for order in orders]
+
+    return Response(orders_data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def accept_order_api(request, order_id):
+    """API для принятия заказа менеджером"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        manager = request.user.manager_profile
+        order = ManagerOrder.objects.get(id=order_id, manager=manager)
+        
+        if order.status != 'new':
+            return Response({'error': 'Заказ уже обработан'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        order.status = 'accepted'
+        order.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Заказ успешно принят',
+            'order': {
+                'id': order.id,
+                'status': order.status
+            }
+        })
+        
+    except ManagerOrder.DoesNotExist:
+        return Response({'error': 'Заказ не найден'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reject_order_api(request, order_id):
+    """API для отклонения заказа менеджером"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        manager = request.user.manager_profile
+        order = ManagerOrder.objects.get(id=order_id, manager=manager)
+        
+        if order.status != 'new':
+            return Response({'error': 'Заказ уже обработан'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        order.status = 'cancelled'
+        order.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Заказ отклонен',
+            'order': {
+                'id': order.id,
+                'status': order.status
+            }
+        })
+        
+    except ManagerOrder.DoesNotExist:
+        return Response({'error': 'Заказ не найден'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def complete_order_api(request, order_id):
+    """API для завершения заказа менеджером"""
+    if not is_manager_user(request.user):
+        return Response({'error': 'Access denied'}, status=status.HTTP_403_FORBIDDEN)
+    
+    try:
+        manager = request.user.manager_profile
+        order = ManagerOrder.objects.get(id=order_id, manager=manager)
+        
+        if order.status not in ['accepted', 'in_progress']:
+            return Response({'error': 'Заказ не может быть завершен'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        order.status = 'completed'
+        order.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Заказ успешно завершен',
+            'order': {
+                'id': order.id,
+                'status': order.status
+            }
+        })
+        
+    except ManagerOrder.DoesNotExist:
+        return Response({'error': 'Заказ не найден'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

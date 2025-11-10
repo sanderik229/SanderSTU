@@ -5,7 +5,9 @@ from .views import (
 )
 from .api_views import (
     manager_profile_api, manager_profile_update_api, manager_bloggers_api,
-    manager_services_api, manager_create_service_api
+    manager_services_api, manager_create_service_api, manager_reports_api,
+    generate_report_api, manager_personal_orders_api, accept_order_api,
+    reject_order_api, complete_order_api
 )
 
 urlpatterns = [
@@ -24,4 +26,10 @@ urlpatterns = [
     path('api/bloggers/', manager_bloggers_api, name='manager_bloggers_api'),
     path('api/services/', manager_services_api, name='manager_services_api'),
     path('api/services/create/', manager_create_service_api, name='manager_create_service_api'),
+    path('api/reports/', manager_reports_api, name='manager_reports_api'),
+    path('api/reports/generate_report/', generate_report_api, name='generate_report_api'),
+    path('api/orders/personal_orders/', manager_personal_orders_api, name='manager_personal_orders_api'),
+    path('api/orders/<int:order_id>/accept/', accept_order_api, name='accept_order_api'),
+    path('api/orders/<int:order_id>/reject/', reject_order_api, name='reject_order_api'),
+    path('api/orders/<int:order_id>/complete/', complete_order_api, name='complete_order_api'),
 ]

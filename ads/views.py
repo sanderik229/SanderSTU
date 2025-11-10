@@ -15,7 +15,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [permissions.AllowAny]  # Allow unauthenticated personal orders
+    permission_classes = [permissions.IsAuthenticated]  # Require authentication for all orders
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -24,7 +24,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        user = self.request.user if self.request.user.is_authenticated else None
+        # User must be authenticated to create orders
+        if not self.request.user.is_authenticated:
+            from rest_framework.exceptions import AuthenticationFailed
+            raise AuthenticationFailed("Для создания заказа необходимо авторизоваться. Пожалуйста, войдите в систему или зарегистрируйтесь.")
+        
+        user = self.request.user
         offer_id = self.request.data.get('offer_id')
         
         # If offer_id is provided, get the offer
@@ -36,7 +41,31 @@ class OrderViewSet(viewsets.ModelViewSet):
             except AdOffer.DoesNotExist:
                 pass
         
-        serializer.save(user=user, offer=offer, order_type='offer' if offer else 'personal')
+        order = serializer.save(user=user, offer=offer, order_type='offer' if offer else 'personal')
+        
+        # Если это персональный заказ, создаем ManagerOrder для менеджера
+        if order.order_type == 'personal':
+            try:
+                from managers.models import Manager, ManagerOrder
+                # Получаем первого активного менеджера или создаем без менеджера
+                manager = Manager.objects.filter(is_active=True).first()
+                if manager:
+                    # Создаем ManagerOrder на основе персонального заказа
+                    manager_order = ManagerOrder.objects.create(
+                        manager=manager,
+                        order_type='personal',
+                        status='new',
+                        client_name=(order.full_name or user.get_full_name() or user.email or 'Клиент')[:200],
+                        client_email=order.email or user.email or '',
+                        client_phone=order.phone or '',
+                        service_description=order.description or 'Описание не указано',
+                        budget=order.budget or 0
+                    )
+                    print(f"✓ Created ManagerOrder #{manager_order.id} for Order #{order.id} (Manager: {manager.user.email})")
+            except Exception as e:
+                print(f"✗ Error creating ManagerOrder: {e}")
+                import traceback
+                traceback.print_exc()
 
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def pay(self, request, pk=None):

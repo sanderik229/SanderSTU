@@ -1,0 +1,1895 @@
+[
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "admin",
+    "model": "logentry"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "auth",
+    "model": "permission"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "auth",
+    "model": "group"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "auth",
+    "model": "user"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "contenttypes",
+    "model": "contenttype"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "sessions",
+    "model": "session"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "authtoken",
+    "model": "token"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "authtoken",
+    "model": "tokenproxy"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "shop",
+    "model": "category"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "shop",
+    "model": "package"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "shop",
+    "model": "ad"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "shop",
+    "model": "order"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "shop",
+    "model": "review"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "accounts",
+    "model": "profile"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "bloggers",
+    "model": "blogger"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "bloggers",
+    "model": "adoffer"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "ads",
+    "model": "category"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "ads",
+    "model": "order"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "payments",
+    "model": "transaction"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "reviews",
+    "model": "review"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "managers",
+    "model": "manager"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "managers",
+    "model": "adservice"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "managers",
+    "model": "managerorder"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "managers",
+    "model": "notification"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "managers",
+    "model": "weeklyreport"
+  }
+},
+{
+  "model": "shop.category",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.401Z",
+    "updated_at": "2025-10-27T22:56:13.401Z",
+    "name": "Баннеры",
+    "slug": "banners"
+  }
+},
+{
+  "model": "shop.category",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.402Z",
+    "updated_at": "2025-10-27T22:56:13.402Z",
+    "name": "Соцсети",
+    "slug": "social"
+  }
+},
+{
+  "model": "shop.category",
+  "pk": 3,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.403Z",
+    "updated_at": "2025-10-27T22:56:13.403Z",
+    "name": "Email",
+    "slug": "email"
+  }
+},
+{
+  "model": "shop.ad",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.405Z",
+    "updated_at": "2025-10-27T22:56:13.406Z",
+    "title": "Баннер на главной",
+    "description": "Размещение баннера 728x90 на главной странице",
+    "category": 1,
+    "price": "15000.00",
+    "popularity": 95,
+    "image": "http://127.0.0.1:8000/static/shop/img/banner_main.svg",
+    "is_active": true
+  }
+},
+{
+  "model": "shop.ad",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.407Z",
+    "updated_at": "2025-10-27T22:56:13.407Z",
+    "title": "Пост в соцсетях",
+    "description": "Нативная интеграция в соцсетях",
+    "category": 2,
+    "price": "12000.00",
+    "popularity": 88,
+    "image": "http://127.0.0.1:8000/static/shop/img/social_post.svg",
+    "is_active": true
+  }
+},
+{
+  "model": "shop.ad",
+  "pk": 3,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.408Z",
+    "updated_at": "2025-10-27T22:56:13.408Z",
+    "title": "Реклама в рассылке",
+    "description": "Нативный блок в email-рассылке",
+    "category": 3,
+    "price": "9000.00",
+    "popularity": 72,
+    "image": "http://127.0.0.1:8000/static/shop/img/email_ad.svg",
+    "is_active": true
+  }
+},
+{
+  "model": "shop.package",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.419Z",
+    "updated_at": "2025-10-27T22:56:13.419Z",
+    "name": "Старт",
+    "description": "Базовый набор каналов",
+    "price": "5000.00",
+    "is_active": true
+  }
+},
+{
+  "model": "shop.package",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.420Z",
+    "updated_at": "2025-10-27T22:56:13.420Z",
+    "name": "Рост",
+    "description": "Оптимизация и масштабирование",
+    "price": "20000.00",
+    "is_active": true
+  }
+},
+{
+  "model": "shop.package",
+  "pk": 3,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.421Z",
+    "updated_at": "2025-10-27T22:56:13.421Z",
+    "name": "Лидер",
+    "description": "Максимальная охватность",
+    "price": "50000.00",
+    "is_active": true
+  }
+},
+{
+  "model": "shop.review",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.416Z",
+    "updated_at": "2025-10-27T22:56:13.416Z",
+    "user_name": "Анна",
+    "rating": 5,
+    "text": "Трафик вырос на 35%. Отличный сервис!",
+    "ad": 1
+  }
+},
+{
+  "model": "shop.review",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.417Z",
+    "updated_at": "2025-10-27T22:56:13.417Z",
+    "user_name": "Игорь",
+    "rating": 4,
+    "text": "Прозрачные метрики и отчёты. Рекомендую!",
+    "ad": 1
+  }
+},
+{
+  "model": "shop.review",
+  "pk": 3,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.418Z",
+    "updated_at": "2025-10-27T22:56:13.418Z",
+    "user_name": "Мария",
+    "rating": 5,
+    "text": "Быстрая настройка и эффективные результаты.",
+    "ad": 2
+  }
+},
+{
+  "model": "shop.review",
+  "pk": 4,
+  "fields": {
+    "created_at": "2025-10-28T00:29:57.685Z",
+    "updated_at": "2025-10-28T00:29:57.685Z",
+    "user_name": "Анна",
+    "rating": 5,
+    "text": "Трафик вырос на 35%.",
+    "ad": 1
+  }
+},
+{
+  "model": "shop.review",
+  "pk": 5,
+  "fields": {
+    "created_at": "2025-10-28T00:29:57.686Z",
+    "updated_at": "2025-10-28T00:29:57.687Z",
+    "user_name": "Игорь",
+    "rating": 4,
+    "text": "Прозрачные метрики и отчёты.",
+    "ad": 1
+  }
+},
+{
+  "model": "bloggers.blogger",
+  "pk": 1,
+  "fields": {
+    "name": "@tech_lifestyle",
+    "social_network": "instagram",
+    "topic": "Технологии и образ жизни",
+    "audience_size": 125000,
+    "manager": null
+  }
+},
+{
+  "model": "bloggers.blogger",
+  "pk": 2,
+  "fields": {
+    "name": "TechReviews",
+    "social_network": "youtube",
+    "topic": "Обзоры техники",
+    "audience_size": 250000,
+    "manager": null
+  }
+},
+{
+  "model": "bloggers.blogger",
+  "pk": 3,
+  "fields": {
+    "name": "FashionDaily",
+    "social_network": "instagram",
+    "topic": "Мода и стиль",
+    "audience_size": 89000,
+    "manager": null
+  }
+},
+{
+  "model": "bloggers.blogger",
+  "pk": 4,
+  "fields": {
+    "name": "Иван Петров",
+    "social_network": "instagram",
+    "topic": "Фотография и путешествия",
+    "audience_size": 125000,
+    "manager": 2
+  }
+},
+{
+  "model": "bloggers.blogger",
+  "pk": 5,
+  "fields": {
+    "name": "Мария Соколова",
+    "social_network": "youtube",
+    "topic": "Кулинария",
+    "audience_size": 250000,
+    "manager": 2
+  }
+},
+{
+  "model": "bloggers.blogger",
+  "pk": 6,
+  "fields": {
+    "name": "Дмитрий Волков",
+    "social_network": "tiktok",
+    "topic": "Юмор и развлечения",
+    "audience_size": 500000,
+    "manager": 2
+  }
+},
+{
+  "model": "bloggers.blogger",
+  "pk": 7,
+  "fields": {
+    "name": "Анна Мельникова",
+    "social_network": "instagram",
+    "topic": "Мода и стиль",
+    "audience_size": 180000,
+    "manager": 2
+  }
+},
+{
+  "model": "bloggers.blogger",
+  "pk": 8,
+  "fields": {
+    "name": "Сергей Новиков",
+    "social_network": "youtube",
+    "topic": "Технологии и обзоры",
+    "audience_size": 350000,
+    "manager": 2
+  }
+},
+{
+  "model": "bloggers.blogger",
+  "pk": 9,
+  "fields": {
+    "name": "Елена Сидорова",
+    "social_network": "telegram",
+    "topic": "Образование и курсы",
+    "audience_size": 95000,
+    "manager": 2
+  }
+},
+{
+  "model": "bloggers.adoffer",
+  "pk": 1,
+  "fields": {
+    "blogger": 1,
+    "title": "Пост в Instagram",
+    "description": "Размещение вашего продукта в Stories и посте",
+    "price": "25000.00",
+    "social_network": "instagram",
+    "is_active": true,
+    "created_at": "2025-10-28T00:10:05.708Z",
+    "updated_at": "2025-10-28T00:10:05.714Z"
+  }
+},
+{
+  "model": "bloggers.adoffer",
+  "pk": 2,
+  "fields": {
+    "blogger": 2,
+    "title": "Обзор на YouTube",
+    "description": "Детальный обзор вашего продукта",
+    "price": "50000.00",
+    "social_network": "youtube",
+    "is_active": true,
+    "created_at": "2025-10-28T00:10:05.708Z",
+    "updated_at": "2025-10-28T00:10:05.714Z"
+  }
+},
+{
+  "model": "bloggers.adoffer",
+  "pk": 3,
+  "fields": {
+    "blogger": null,
+    "title": "132213",
+    "description": "123123",
+    "price": "123123.00",
+    "social_network": "instagram",
+    "is_active": true,
+    "created_at": "2025-10-28T00:10:05.708Z",
+    "updated_at": "2025-10-28T00:10:05.714Z"
+  }
+},
+{
+  "model": "bloggers.adoffer",
+  "pk": 4,
+  "fields": {
+    "blogger": null,
+    "title": "132",
+    "description": "312",
+    "price": "10000.00",
+    "social_network": "instagram",
+    "is_active": true,
+    "created_at": "2025-10-28T00:10:05.708Z",
+    "updated_at": "2025-10-28T00:10:05.714Z"
+  }
+},
+{
+  "model": "bloggers.adoffer",
+  "pk": 5,
+  "fields": {
+    "blogger": null,
+    "title": "123",
+    "description": "123123",
+    "price": "10000.00",
+    "social_network": "instagram",
+    "is_active": true,
+    "created_at": "2025-10-28T00:10:05.708Z",
+    "updated_at": "2025-10-28T00:10:05.714Z"
+  }
+},
+{
+  "model": "managers.adservice",
+  "pk": 1,
+  "fields": {
+    "name": "42432",
+    "social_network": "",
+    "price": "23342.00",
+    "description": "432432",
+    "blogger": 5,
+    "manager": 2,
+    "is_active": true,
+    "created_at": "2025-10-28T00:30:44.078Z",
+    "updated_at": "2025-10-28T00:30:44.078Z"
+  }
+},
+{
+  "model": "managers.managerorder",
+  "pk": 1,
+  "fields": {
+    "manager": 2,
+    "order_type": "personal",
+    "status": "completed",
+    "blogger_order": null,
+    "client_name": "Бабаян Левон Артурович",
+    "client_email": "flymlykly@gmail.com",
+    "client_phone": "+79256218663",
+    "service_description": "123213123",
+    "budget": "10000.00",
+    "created_at": "2025-10-28T01:06:07.960Z",
+    "updated_at": "2025-10-28T01:15:41.617Z"
+  }
+},
+{
+  "model": "managers.weeklyreport",
+  "pk": 1,
+  "fields": {
+    "manager": 2,
+    "week_start": "2025-10-26",
+    "week_end": "2025-11-01",
+    "total_orders": 0,
+    "total_revenue": "0.00",
+    "active_services": 1,
+    "pdf_file": "",
+    "created_at": "2025-10-28T00:51:20.579Z"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "view_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Token",
+    "content_type": [
+      "authtoken",
+      "token"
+    ],
+    "codename": "add_token"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Token",
+    "content_type": [
+      "authtoken",
+      "token"
+    ],
+    "codename": "change_token"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Token",
+    "content_type": [
+      "authtoken",
+      "token"
+    ],
+    "codename": "delete_token"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Token",
+    "content_type": [
+      "authtoken",
+      "token"
+    ],
+    "codename": "view_token"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Token",
+    "content_type": [
+      "authtoken",
+      "tokenproxy"
+    ],
+    "codename": "add_tokenproxy"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Token",
+    "content_type": [
+      "authtoken",
+      "tokenproxy"
+    ],
+    "codename": "change_tokenproxy"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Token",
+    "content_type": [
+      "authtoken",
+      "tokenproxy"
+    ],
+    "codename": "delete_tokenproxy"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Token",
+    "content_type": [
+      "authtoken",
+      "tokenproxy"
+    ],
+    "codename": "view_tokenproxy"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add category",
+    "content_type": [
+      "shop",
+      "category"
+    ],
+    "codename": "add_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change category",
+    "content_type": [
+      "shop",
+      "category"
+    ],
+    "codename": "change_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete category",
+    "content_type": [
+      "shop",
+      "category"
+    ],
+    "codename": "delete_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view category",
+    "content_type": [
+      "shop",
+      "category"
+    ],
+    "codename": "view_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add package",
+    "content_type": [
+      "shop",
+      "package"
+    ],
+    "codename": "add_package"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change package",
+    "content_type": [
+      "shop",
+      "package"
+    ],
+    "codename": "change_package"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete package",
+    "content_type": [
+      "shop",
+      "package"
+    ],
+    "codename": "delete_package"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view package",
+    "content_type": [
+      "shop",
+      "package"
+    ],
+    "codename": "view_package"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add ad",
+    "content_type": [
+      "shop",
+      "ad"
+    ],
+    "codename": "add_ad"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change ad",
+    "content_type": [
+      "shop",
+      "ad"
+    ],
+    "codename": "change_ad"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete ad",
+    "content_type": [
+      "shop",
+      "ad"
+    ],
+    "codename": "delete_ad"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view ad",
+    "content_type": [
+      "shop",
+      "ad"
+    ],
+    "codename": "view_ad"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add order",
+    "content_type": [
+      "shop",
+      "order"
+    ],
+    "codename": "add_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change order",
+    "content_type": [
+      "shop",
+      "order"
+    ],
+    "codename": "change_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete order",
+    "content_type": [
+      "shop",
+      "order"
+    ],
+    "codename": "delete_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view order",
+    "content_type": [
+      "shop",
+      "order"
+    ],
+    "codename": "view_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add review",
+    "content_type": [
+      "shop",
+      "review"
+    ],
+    "codename": "add_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change review",
+    "content_type": [
+      "shop",
+      "review"
+    ],
+    "codename": "change_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete review",
+    "content_type": [
+      "shop",
+      "review"
+    ],
+    "codename": "delete_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view review",
+    "content_type": [
+      "shop",
+      "review"
+    ],
+    "codename": "view_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add profile",
+    "content_type": [
+      "accounts",
+      "profile"
+    ],
+    "codename": "add_profile"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change profile",
+    "content_type": [
+      "accounts",
+      "profile"
+    ],
+    "codename": "change_profile"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete profile",
+    "content_type": [
+      "accounts",
+      "profile"
+    ],
+    "codename": "delete_profile"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view profile",
+    "content_type": [
+      "accounts",
+      "profile"
+    ],
+    "codename": "view_profile"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add blogger",
+    "content_type": [
+      "bloggers",
+      "blogger"
+    ],
+    "codename": "add_blogger"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change blogger",
+    "content_type": [
+      "bloggers",
+      "blogger"
+    ],
+    "codename": "change_blogger"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete blogger",
+    "content_type": [
+      "bloggers",
+      "blogger"
+    ],
+    "codename": "delete_blogger"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view blogger",
+    "content_type": [
+      "bloggers",
+      "blogger"
+    ],
+    "codename": "view_blogger"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add ad offer",
+    "content_type": [
+      "bloggers",
+      "adoffer"
+    ],
+    "codename": "add_adoffer"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change ad offer",
+    "content_type": [
+      "bloggers",
+      "adoffer"
+    ],
+    "codename": "change_adoffer"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete ad offer",
+    "content_type": [
+      "bloggers",
+      "adoffer"
+    ],
+    "codename": "delete_adoffer"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view ad offer",
+    "content_type": [
+      "bloggers",
+      "adoffer"
+    ],
+    "codename": "view_adoffer"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add category",
+    "content_type": [
+      "ads",
+      "category"
+    ],
+    "codename": "add_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change category",
+    "content_type": [
+      "ads",
+      "category"
+    ],
+    "codename": "change_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete category",
+    "content_type": [
+      "ads",
+      "category"
+    ],
+    "codename": "delete_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view category",
+    "content_type": [
+      "ads",
+      "category"
+    ],
+    "codename": "view_category"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add order",
+    "content_type": [
+      "ads",
+      "order"
+    ],
+    "codename": "add_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change order",
+    "content_type": [
+      "ads",
+      "order"
+    ],
+    "codename": "change_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete order",
+    "content_type": [
+      "ads",
+      "order"
+    ],
+    "codename": "delete_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view order",
+    "content_type": [
+      "ads",
+      "order"
+    ],
+    "codename": "view_order"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add transaction",
+    "content_type": [
+      "payments",
+      "transaction"
+    ],
+    "codename": "add_transaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change transaction",
+    "content_type": [
+      "payments",
+      "transaction"
+    ],
+    "codename": "change_transaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete transaction",
+    "content_type": [
+      "payments",
+      "transaction"
+    ],
+    "codename": "delete_transaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view transaction",
+    "content_type": [
+      "payments",
+      "transaction"
+    ],
+    "codename": "view_transaction"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add review",
+    "content_type": [
+      "reviews",
+      "review"
+    ],
+    "codename": "add_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change review",
+    "content_type": [
+      "reviews",
+      "review"
+    ],
+    "codename": "change_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete review",
+    "content_type": [
+      "reviews",
+      "review"
+    ],
+    "codename": "delete_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view review",
+    "content_type": [
+      "reviews",
+      "review"
+    ],
+    "codename": "view_review"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Менеджер",
+    "content_type": [
+      "managers",
+      "manager"
+    ],
+    "codename": "add_manager"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Менеджер",
+    "content_type": [
+      "managers",
+      "manager"
+    ],
+    "codename": "change_manager"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Менеджер",
+    "content_type": [
+      "managers",
+      "manager"
+    ],
+    "codename": "delete_manager"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Менеджер",
+    "content_type": [
+      "managers",
+      "manager"
+    ],
+    "codename": "view_manager"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Рекламная услуга",
+    "content_type": [
+      "managers",
+      "adservice"
+    ],
+    "codename": "add_adservice"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Рекламная услуга",
+    "content_type": [
+      "managers",
+      "adservice"
+    ],
+    "codename": "change_adservice"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Рекламная услуга",
+    "content_type": [
+      "managers",
+      "adservice"
+    ],
+    "codename": "delete_adservice"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Рекламная услуга",
+    "content_type": [
+      "managers",
+      "adservice"
+    ],
+    "codename": "view_adservice"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Заказ менеджера",
+    "content_type": [
+      "managers",
+      "managerorder"
+    ],
+    "codename": "add_managerorder"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Заказ менеджера",
+    "content_type": [
+      "managers",
+      "managerorder"
+    ],
+    "codename": "change_managerorder"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Заказ менеджера",
+    "content_type": [
+      "managers",
+      "managerorder"
+    ],
+    "codename": "delete_managerorder"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Заказ менеджера",
+    "content_type": [
+      "managers",
+      "managerorder"
+    ],
+    "codename": "view_managerorder"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Уведомление",
+    "content_type": [
+      "managers",
+      "notification"
+    ],
+    "codename": "add_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Уведомление",
+    "content_type": [
+      "managers",
+      "notification"
+    ],
+    "codename": "change_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Уведомление",
+    "content_type": [
+      "managers",
+      "notification"
+    ],
+    "codename": "delete_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Уведомление",
+    "content_type": [
+      "managers",
+      "notification"
+    ],
+    "codename": "view_notification"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add Еженедельный отчет",
+    "content_type": [
+      "managers",
+      "weeklyreport"
+    ],
+    "codename": "add_weeklyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change Еженедельный отчет",
+    "content_type": [
+      "managers",
+      "weeklyreport"
+    ],
+    "codename": "change_weeklyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete Еженедельный отчет",
+    "content_type": [
+      "managers",
+      "weeklyreport"
+    ],
+    "codename": "delete_weeklyreport"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view Еженедельный отчет",
+    "content_type": [
+      "managers",
+      "weeklyreport"
+    ],
+    "codename": "view_weeklyreport"
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$rN1Gs91UAZZRPZ2w0C3Gjn$0B7hHgobKWhzXQsIbDJse4O/fbe1t0zIkKcpubyfYxo=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "admin@sanderstu.com",
+    "first_name": "Админ",
+    "last_name": "Системный",
+    "email": "admin@sanderstu.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-10-27T23:09:09.341Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$vgZt628psEOu1Slf7UfrNO$4d/8NtDPmVXmQLg2ssE3/JJ/DHJnuWaZEloSXJ9AJ20=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "manager@sanderstu.com",
+    "first_name": "Иван",
+    "last_name": "Менеджеров",
+    "email": "manager@sanderstu.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-10-27T23:09:09.684Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$qk62sH3ItGGrY5eeIELSWG$Rk+o+a0cT9iAkCM46T0YW5xFWGtsSqr/bQvcZI4zMZc=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "user@sanderstu.com",
+    "first_name": "Петр",
+    "last_name": "Пользователь",
+    "email": "user@sanderstu.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-10-27T23:09:10.029Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "test@example.com",
+    "first_name": "",
+    "last_name": "",
+    "email": "test@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-10-28T00:29:57.677Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "admin@example.com",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@example.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-10-28T00:29:57.679Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$p61HyYGQas1sbbkNbef1UF$7F6vGzPzm6+eZnIK8PVQH/HeHlFXQdwkrSm0ALSsy1M=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "flymlykly@gmail.com",
+    "first_name": "",
+    "last_name": "",
+    "email": "flymlykly@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-10-28T00:52:27.406Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 1,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.412Z",
+    "updated_at": "2025-10-27T22:56:13.412Z",
+    "customer_name": "Петр Пользователь",
+    "email": "user@sanderstu.com",
+    "phone": "+7 (999) 111-22-33",
+    "description": "Нужна реклама для нового продукта",
+    "ad": 1,
+    "package": null,
+    "status": "new",
+    "payment_status": "pending",
+    "payment_amount": "15000.00",
+    "payment_date": null,
+    "user": null
+  }
+},
+{
+  "model": "shop.order",
+  "pk": 2,
+  "fields": {
+    "created_at": "2025-10-27T22:56:13.413Z",
+    "updated_at": "2025-10-27T22:56:13.413Z",
+    "customer_name": "ООО Новый Продукт",
+    "email": "info@newproduct.com",
+    "phone": "+7 (999) 222-33-44",
+    "description": "Масштабная рекламная кампания",
+    "ad": 2,
+    "package": null,
+    "status": "in_progress",
+    "payment_status": "paid",
+    "payment_amount": "12000.00",
+    "payment_date": null,
+    "user": null
+  }
+},
+{
+  "model": "ads.order",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "flymlykly@gmail.com"
+    ],
+    "offer": null,
+    "order_type": "personal",
+    "status": "paid",
+    "payment_status": "paid",
+    "payment_amount": "1000000.00",
+    "payment_date": "2025-10-28T00:53:28.035Z",
+    "performance": {},
+    "created_at": "2025-10-28T00:53:07.400Z",
+    "full_name": "Бабаян Левон Артурович",
+    "email": "flymlykly@gmail.com",
+    "phone": "+79256218663",
+    "ad_type": "instagram_story",
+    "budget": "10000.00",
+    "description": "123213123",
+    "deadline": null,
+    "requirements": ""
+  }
+},
+{
+  "model": "managers.manager",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "manager@sanderstu.com"
+    ],
+    "phone": "+7 (999) 123-45-67",
+    "department": "Реклама и продвижение",
+    "hire_date": "2025-10-27",
+    "is_active": true,
+    "created_at": "2025-10-27T23:09:10.028Z",
+    "updated_at": "2025-10-27T23:09:10.028Z"
+  }
+},
+{
+  "model": "accounts.profile",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "admin@sanderstu.com"
+    ],
+    "full_name": "Админ Системный",
+    "birth_year": null,
+    "role": "admin",
+    "card_last4": ""
+  }
+},
+{
+  "model": "accounts.profile",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "manager@sanderstu.com"
+    ],
+    "full_name": "Иван Менеджеров",
+    "birth_year": 1990,
+    "role": "manager",
+    "card_last4": ""
+  }
+},
+{
+  "model": "accounts.profile",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "user@sanderstu.com"
+    ],
+    "full_name": "Петр Пользователь",
+    "birth_year": 1995,
+    "role": "user",
+    "card_last4": ""
+  }
+},
+{
+  "model": "accounts.profile",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "flymlykly@gmail.com"
+    ],
+    "full_name": "Бабаян Левон АРтурович",
+    "birth_year": 1999,
+    "role": "user",
+    "card_last4": ""
+  }
+}
+]

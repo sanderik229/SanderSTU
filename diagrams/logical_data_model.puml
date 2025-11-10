@@ -1,0 +1,381 @@
+@startuml Logical Data Model - SanderStu
+!theme cerulean
+skinparam backgroundColor #FFFFFF
+skinparam monochrome false
+skinparam roundcorner 10
+hide stereotype
+
+title SanderStu - Логическая модель данных (PostgreSQL)
+
+package "User & Profile" {
+  
+  entity "auth_user" as user {
+    * **id** : INTEGER <<PK>>
+    --
+    * **username** : VARCHAR(150) <<UNIQUE>>
+    * **email** : VARCHAR(254)
+    * **password** : VARCHAR(128)
+    first_name : VARCHAR(150)
+    last_name : VARCHAR(150)
+    **is_staff** : BOOLEAN
+    **is_superuser** : BOOLEAN
+    date_joined : TIMESTAMP
+    last_login : TIMESTAMP
+    --
+    ++ constraints ++
+    UNIQUE(username)
+    NOT NULL(username, email, password)
+  }
+  
+  entity "accounts_profile" as profile {
+    * **id** : INTEGER <<PK>>
+    --
+    * **user_id** : INTEGER <<FK>> <<UNIQUE>>
+    **full_name** : VARCHAR(200)
+    birth_year : INTEGER
+    **role** : VARCHAR(20) <<default:'user'>>
+    card_last4 : VARCHAR(4)
+    --
+    ++ constraints ++
+    FOREIGN KEY(user_id → auth_user.id)
+    CHECK(birth_year >= 1900)
+  }
+  
+  entity "managers_manager" as manager {
+    * **id** : INTEGER <<PK>>
+    --
+    * **user_id** : INTEGER <<FK>> <<UNIQUE>>
+    phone : VARCHAR(20)
+    department : VARCHAR(100)
+    **hire_date** : DATE
+    **is_active** : BOOLEAN <<default:true>>
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    --
+    ++ properties ++
+    {property} active_orders_count()
+    {property} managed_bloggers_count()
+  }
+}
+
+package "Content - Bloggers" {
+  
+  entity "bloggers_blogger" as blogger {
+    * **id** : INTEGER <<PK>>
+    --
+    * **name** : VARCHAR(200)
+    * **social_network** : VARCHAR(30)
+    * **topic** : VARCHAR(120)
+    * **audience_size** : INTEGER <<default:0>>
+    manager_id : INTEGER <<FK>>
+    --
+    ++ constraints ++
+    FOREIGN KEY(manager_id → managers_manager.id)
+    CHECK(social_network IN ('instagram','tiktok','youtube','vk','telegram'))
+    CHECK(audience_size >= 0)
+    ++ indexes ++
+    idx_social_network(social_network)
+  }
+  
+  entity "bloggers_adoffer" as adoffer {
+    * **id** : INTEGER <<PK>>
+    --
+    blogger_id : INTEGER <<FK>>
+    * **title** : VARCHAR(200)
+    description : TEXT
+    * **price** : DECIMAL(10,2)
+    * **social_network** : VARCHAR(30)
+    **is_active** : BOOLEAN <<default:true>>
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    --
+    ++ constraints ++
+    FOREIGN KEY(blogger_id → bloggers_blogger.id)
+    CHECK(price >= 0)
+    ++ indexes ++
+    idx_blogger_id(blogger_id)
+    idx_is_active(is_active)
+  }
+  
+  entity "managers_adservice" as adservice {
+    * **id** : INTEGER <<PK>>
+    --
+    * **name** : VARCHAR(200)
+    * **social_network** : VARCHAR(20)
+    * **price** : DECIMAL(10,2)
+    * **description** : TEXT
+    **is_active** : BOOLEAN <<default:true>>
+    blogger_id : INTEGER <<FK>> <<NOT NULL>>
+    manager_id : INTEGER <<FK>> <<NOT NULL>>
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    --
+    ++ constraints ++
+    FOREIGN KEY(blogger_id → bloggers_blogger.id)
+    FOREIGN KEY(manager_id → managers_manager.id)
+    CHECK(price >= 0)
+    ++ indexes ++
+    idx_blogger_manager(blogger_id, manager_id)
+  }
+}
+
+package "Orders" {
+  
+  entity "ads_order" as order {
+    * **id** : INTEGER <<PK>>
+    --
+    user_id : INTEGER <<FK>>
+    offer_id : INTEGER <<FK>>
+    * **order_type** : VARCHAR(20) <<default:'personal'>>
+    * **status** : VARCHAR(20) <<default:'new'>>
+    * **payment_status** : VARCHAR(20) <<default:'pending'>>
+    payment_amount : DECIMAL(10,2)
+    payment_date : TIMESTAMP
+    performance : JSON <<default:'{}'>>
+    created_at : TIMESTAMP
+    --
+    \\ Personal order fields \\
+    full_name : VARCHAR(200)
+    email : VARCHAR(255)
+    phone : VARCHAR(40)
+    ad_type : VARCHAR(50)
+    budget : DECIMAL(10,2)
+    description : TEXT
+    \\
+    \\ Offer order fields \\
+    deadline : INTEGER
+    requirements : TEXT
+    --
+    ++ constraints ++
+    FOREIGN KEY(user_id → auth_user.id)
+    FOREIGN KEY(offer_id → bloggers_adoffer.id)
+    CHECK(status IN ('new','paid','in_progress','done','cancelled'))
+    CHECK(payment_status IN ('pending','paid','failed'))
+    CHECK(payment_amount >= 0)
+    CHECK(budget >= 0)
+    ++ indexes ++
+    idx_user_id(user_id)
+    idx_offer_id(offer_id)
+    idx_status(status)
+    idx_created_at(created_at)
+  }
+  
+  entity "managers_managerorder" as managerorder {
+    * **id** : INTEGER <<PK>>
+    --
+    **manager_id** : INTEGER <<FK>> <<NOT NULL>>
+    * **order_type** : VARCHAR(20) <<default:'blogger'>>
+    * **status** : VARCHAR(20) <<default:'new'>>
+    blogger_order_id : INTEGER <<FK>>
+    --
+    client_name : VARCHAR(200)
+    client_email : VARCHAR(255)
+    client_phone : VARCHAR(20)
+    service_description : TEXT
+    budget : DECIMAL(10,2)
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    --
+    ++ constraints ++
+    FOREIGN KEY(manager_id → managers_manager.id)
+    FOREIGN KEY(blogger_order_id → ads_order.id)
+    CHECK(status IN ('new','accepted','in_progress','completed','cancelled'))
+    CHECK(budget >= 0)
+    ++ indexes ++
+    idx_manager_id(manager_id)
+    idx_status(status)
+  }
+}
+
+package "Shop Module" {
+  
+  entity "shop_category" as category {
+    * **id** : INTEGER <<PK>>
+    --
+    * **name** : VARCHAR(120) <<UNIQUE>>
+    * **slug** : VARCHAR(140) <<UNIQUE>>
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    --
+    ++ constraints ++
+    UNIQUE(name, slug)
+  }
+  
+  entity "shop_ad" as shopad {
+    * **id** : INTEGER <<PK>>
+    --
+    * **title** : VARCHAR(200)
+    description : TEXT
+    **category_id** : INTEGER <<FK>> <<NOT NULL>>
+    * **price** : DECIMAL(10,2)
+    popularity : INTEGER <<default:0>>
+    image : VARCHAR(200)
+    **is_active** : BOOLEAN <<default:true>>
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    --
+    ++ constraints ++
+    FOREIGN KEY(category_id → shop_category.id)
+    CHECK(price >= 0)
+    CHECK(popularity >= 0)
+    ++ indexes ++
+    idx_category_id(category_id)
+    idx_popularity_price(popularity DESC, price ASC)
+  }
+  
+  entity "shop_package" as package {
+    * **id** : INTEGER <<PK>>
+    --
+    * **name** : VARCHAR(120)
+    description : TEXT
+    * **price** : DECIMAL(10,2)
+    **is_active** : BOOLEAN <<default:true>>
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    --
+    ++ constraints ++
+    CHECK(price >= 0)
+  }
+  
+  entity "shop_order" as shoporder {
+    * **id** : INTEGER <<PK>>
+    --
+    **customer_name** : VARCHAR(120) <<NOT NULL>>
+    **email** : VARCHAR(255) <<NOT NULL>>
+    **phone** : VARCHAR(40) <<NOT NULL>>
+    **description** : TEXT <<NOT NULL>>
+    ad_id : INTEGER <<FK>>
+    package_id : INTEGER <<FK>>
+    * **status** : VARCHAR(20) <<default:'new'>>
+    * **payment_status** : VARCHAR(20) <<default:'pending'>>
+    payment_amount : DECIMAL(10,2)
+    payment_date : TIMESTAMP
+    user_id : INTEGER <<FK>>
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    --
+    ++ constraints ++
+    FOREIGN KEY(ad_id → shop_ad.id)
+    FOREIGN KEY(package_id → shop_package.id)
+    FOREIGN KEY(user_id → auth_user.id)
+    CHECK(status IN ('new','in_progress','done','cancelled'))
+    ++ indexes ++
+    idx_user_id(user_id)
+    idx_created_at(created_at DESC)
+  }
+}
+
+package "Reviews" {
+  
+  entity "reviews_review" as review {
+    * **id** : INTEGER <<PK>>
+    --
+    **user_id** : INTEGER <<FK>> <<NOT NULL>>
+    **blogger_id** : INTEGER <<FK>> <<NOT NULL>>
+    offer_id : INTEGER <<FK>>
+    **rating** : SMALLINT <<default:5>>
+    **text** : TEXT <<NOT NULL>>
+    created_at : TIMESTAMP
+    --
+    ++ constraints ++
+    FOREIGN KEY(user_id → auth_user.id)
+    FOREIGN KEY(blogger_id → bloggers_blogger.id)
+    FOREIGN KEY(offer_id → bloggers_adoffer.id)
+    CHECK(rating >= 1 AND rating <= 5)
+    ++ indexes ++
+    idx_user_id(user_id)
+    idx_blogger_id(blogger_id)
+    idx_rating(rating)
+  }
+  
+  entity "shop_review" as shopreview {
+    * **id** : INTEGER <<PK>>
+    --
+    **user_name** : VARCHAR(120) <<NOT NULL>>
+    **rating** : SMALLINT <<default:5>>
+    **text** : TEXT <<NOT NULL>>
+    ad_id : INTEGER <<FK>>
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    --
+    ++ constraints ++
+    FOREIGN KEY(ad_id → shop_ad.id)
+    CHECK(rating >= 1 AND rating <= 5)
+    ++ indexes ++
+    idx_ad_id(ad_id)
+  }
+}
+
+package "Reports & Notifications" {
+  
+  entity "managers_weeklyreport" as weeklyreport {
+    * **id** : INTEGER <<PK>>
+    --
+    **manager_id** : INTEGER <<FK>> <<NOT NULL>>
+    **week_start** : DATE <<NOT NULL>>
+    **week_end** : DATE <<NOT NULL>>
+    **total_orders** : INTEGER <<default:0>>
+    **total_revenue** : DECIMAL(12,2) <<default:0>>
+    **active_services** : INTEGER <<default:0>>
+    pdf_file : VARCHAR(200)
+    created_at : TIMESTAMP
+    --
+    ++ constraints ++
+    FOREIGN KEY(manager_id → managers_manager.id)
+    CHECK(total_orders >= 0)
+    CHECK(total_revenue >= 0)
+    CHECK(week_end >= week_start)
+    ++ indexes ++
+    idx_manager_id(manager_id)
+    idx_week_start(week_start DESC)
+  }
+  
+  entity "managers_notification" as notification {
+    * **id** : INTEGER <<PK>>
+    --
+    **manager_id** : INTEGER <<FK>> <<NOT NULL>>
+    **notification_type** : VARCHAR(20) <<NOT NULL>>
+    **title** : VARCHAR(200) <<NOT NULL>>
+    **message** : TEXT <<NOT NULL>>
+    **is_read** : BOOLEAN <<default:false>>
+    created_at : TIMESTAMP
+    --
+    ++ constraints ++
+    FOREIGN KEY(manager_id → managers_manager.id)
+    CHECK(notification_type IN ('service_created','service_updated','service_deleted','order_accepted','order_completed','report_generated'))
+    ++ indexes ++
+    idx_manager_id(manager_id)
+    idx_is_read(is_read)
+    idx_created_at(created_at DESC)
+  }
+}
+
+' Relationships
+user ||--|| profile
+user ||--o| manager
+user ||--o{ order : places
+user ||--o{ review : writes
+user ||--o{ shoporder : places
+
+manager ||--o{ blogger : manages
+manager ||--o{ adservice : creates
+manager ||--o{ managerorder : manages
+manager ||--o{ weeklyreport : generates
+manager ||--o{ notification : receives
+
+blogger ||--o{ adoffer : has
+blogger ||--o{ adservice : provides
+blogger ||--o{ review : receives
+
+adoffer ||--o{ order : referenced_by
+adoffer ||--o{ review : has
+
+category ||--o{ shopad : contains
+shopad ||--o{ shoporder : ordered_as
+shopad ||--o{ shopreview : reviewed
+package ||--o{ shoporder : ordered_as
+
+order ||--o{ managerorder : creates
+
+@enduml
+
